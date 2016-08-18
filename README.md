@@ -8,33 +8,23 @@ To setup your fetch mock you need to do the following things:
 $ npm install --save jest-fetch-mock
 ```
 
+Create a setupJest file to setup the mock or add this to your setupFile:
+
+```js
+//setupJest.js
+global.fetch = require('jest-fetch-mock');
+```
+
 Add a setupFiles option in your jest config in package.json:
 
 ```JSON
 //package.json
 "jest": {
   "automock": false,
-  "testRegex": "\\.test\\.js$",
   "setupFiles": [
     "./setupJest.js"
   ]
 }
-```
-
-Create the setupJest file to setup the mock:
-
-```js
-//setupJest.js
-jest.mock('fetch');
-global.fetch = require('fetch');
-```
-
-Add the actual mock module to your `__mock__` folder and export it so Jest can use it.
-
-```js
-//__mock__/fetch.js
-import fetch from 'jest-fetch-mock'
-module.exports = fetch
 ```
 
 
