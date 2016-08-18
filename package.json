@@ -1,0 +1,24 @@
+{
+  "name": "jest-fetch-mock",
+  "version": "1.0.0",
+  "description": "fetch mock for jest",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jefflau/jest-fetch-mock.git"
+  },
+  "keywords": [
+    "jest",
+    "mock",
+    "fetch"
+  ],
+  "author": "Jeff Lau <jeff-lau@live.com> (http://jefflau.net/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jefflau/jest-fetch-mock/issues"
+  },
+  "homepage": "https://github.com/jefflau/jest-fetch-mock#readme"
+}
