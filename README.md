@@ -8,14 +8,14 @@ To setup your fetch mock you need to do the following things:
 $ npm install --save jest-fetch-mock
 ```
 
-Create a setupJest file to setup the mock or add this to your setupFile:
+Create a setupJest file to setup the mock or add this to an existing setupFile:
 
 ```js
 //setupJest.js
 global.fetch = require('jest-fetch-mock');
 ```
 
-Add a setupFiles option in your jest config in package.json:
+Add the setupFile to your jest config in package.json:
 
 ```JSON
 //package.json
@@ -27,6 +27,7 @@ Add a setupFiles option in your jest config in package.json:
 }
 ```
 
+Now you can use the fetch mock by calling `fetch.mockResponse()` in your test files
 
 ## Example
 
