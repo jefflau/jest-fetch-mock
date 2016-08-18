@@ -18,7 +18,6 @@ global.fetch = require('jest-fetch-mock');
 Add the setupFile to your jest config in package.json:
 
 ```JSON
-//package.json
 "jest": {
   "automock": false,
   "setupFiles": [
