@@ -28,8 +28,8 @@ Add the setupFile to your jest config in package.json:
 
 ##API
 
-`fetch.mockImplementation(body, init)` - Mock all fetch calls
-`fetch.mockImplementationOnce(body, init)` - Mock each fetch call independently
+* `fetch.mockImplementation(body, init)` - Mock all fetch calls
+* `fetch.mockImplementationOnce(body, init)` - Mock each fetch call independently
 
 For information on the parameters body and init take, you can look at the MDN docs on the Response Constructor function, which `jest-fetch-mock` uses under the surface.
 
