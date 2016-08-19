@@ -7,7 +7,7 @@ Fetch is the new way to do HTTP requests in the browser, and it can be used in o
 To setup your fetch mock you need to do the following things:
 
 ```
-$ npm install --save jest-fetch-mock
+$ npm install --save-dev jest-fetch-mock
 ```
 
 Create a setupJest file to setup the mock or add this to an existing setupFile:
