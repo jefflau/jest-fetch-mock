@@ -1,4 +1,6 @@
-# jest-fetch-mock
+# Jest Fetch Mock
+
+Fetch is the new way to do HTTP requests in the browser, and it can be used in other environments such as React Native. Jest Fetch Mock allows you to easily mock your `fetch` calls and return the response you need to fake the HTTP requests. It's easy to setup and you don't need a library like `nock` to get going. It uses Jest's built-in support for mocking under the surface. It currently supports the mocking of the go-to polyfill for fetch, [`whatwg-fetch`](https://github.com/github/fetch)
 
 ## Setup and Installation
 
