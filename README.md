@@ -26,12 +26,19 @@ Add the setupFile to your jest config in package.json:
 }
 ```
 
-Now you can use the fetch mock by calling `fetch.mockResponse()` in your test files
+##API
 
-## Example
+`fetch.mockImplementation(body, init)` - Mock all fetch calls
+`fetch.mockImplementationOnce(body, init)` - Mock each fetch call independently
+
+For information on the parameters body and init take, you can look at the MDN docs on the Response Constructor function, which `jest-fetch-mock` uses under the surface.
+
+https://developer.mozilla.org/en-US/docs/Web/API/Response/Response
+
+## Example 1 - Mocking all fetches
 
 ```js
-import configureMockStore from 'redux-mock-store' // mock store 
+import configureMockStore from 'redux-mock-store' // mock store
 import thunk from 'redux-thunk'
 
 const middlewares = [ thunk ]
@@ -59,6 +66,36 @@ describe('Access token action creators', () => {
   });
 
 })
+
 ```
 
+##Example 2 - Mocking multiple fetches with different responses
 
+In this next example, the store does not yet have a token, so we make a request to get an access token first. This means that we need to mock two different responses, one for each of the fetches. Here we can use `fetch.mockResponseOnce` to mock the response only once, which internally uses jest's `mockImplementationOnce`. You can read more about it on the [Jest documentation](https://facebook.github.io/jest/docs/mock-functions.html#content)
+
+```js
+import configureMockStore from 'redux-mock-store'
+import thunk from 'redux-thunk'
+
+const middlewares = [ thunk ]
+const mockStore = configureMockStore(middlewares)
+
+import { getAnimeDetails } from './animeDetails'
+
+it('dispatches requests for an access token before requesting for animeDetails', () => {
+
+  fetch.mockResponseOnce(JSON.stringify({ access_token: '12345' }))
+  fetch.mockResponseOnce(JSON.stringify({ name: 'naruto' }))
+
+  const expectedActions = [
+    { type: 'SET_ACCESS_TOKEN', token: { access_token: '12345' }},
+    { type: 'SET_ANIME_DETAILS', animeDetails: { name: 'naruto' }}
+  ]
+  const store = mockStore({ config: { token: null }})
+
+  return store.dispatch(getAnimeDetails("21049"))
+    .then(() => { // return of async actions
+      expect(store.getActions()).toEqual(expectedActions)
+    })
+});
+```
