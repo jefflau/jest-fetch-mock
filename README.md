@@ -30,8 +30,11 @@ Add the setupFile to your jest config in package.json:
 
 ##API
 
-* `fetch.mockImplementation(body, init)` - Mock all fetch calls
-* `fetch.mockImplementationOnce(body, init)` - Mock each fetch call independently
+* `fetch.mockResponse(body, init)` - Mock all fetch calls
+* `fetch.mockResponseOnce(body, init)` - Mock each fetch call independently
+* `fetch.mockResponses(...responses)` - Mock multiple fetch calls independently
+  * Each argument is an array taking [body, init]
+
 
 For information on the parameters body and init take, you can look at the MDN docs on the Response Constructor function, which `jest-fetch-mock` uses under the surface.
 
@@ -108,5 +111,64 @@ describe('Anime details action creators', () => {
       })
   })
 
+})
+```
+
+##Example 3 - Mocking multiple fetches with `fetch.mockResponses`
+
+`fetch.mockResponses` takes as many arguments as you give it, all of which are arrays representing each Response Object. It will then call the `mockImplementationOnce` for each response object you give it. This reduces the amount of boilerplate code you need to write.
+
+In this example our actionCreator calls `fetch` 4 times, once for each season of the year and then concatenates the results into one final array. You'd have to write `fetch.mockResponseOnce` 4 times to achieve the same thing:
+
+```js
+describe('getYear action creator', () => {
+  it('dispatches the correct actions on successful getSeason fetch request', () => {
+
+    fetch.mockResponses(
+      [
+        JSON.stringify([ {name: 'naruto', average_score: 79} ]), { status: 200}
+      ],
+      [
+        JSON.stringify([ {name: 'bleach', average_score: 68} ]), { status: 200}
+      ],
+      [
+        JSON.stringify([ {name: 'one piece', average_score: 80} ]), { status: 200}
+      ],
+      [
+        JSON.stringify([ {name: 'shingeki', average_score: 91} ]), { status: 200}
+      ]
+    )
+
+    const expectedActions = [
+      {
+        type: 'FETCH_ANIMELIST_REQUEST'
+      },
+      {
+        type: 'SET_YEAR',
+        payload: {
+          animes: [
+            {name: 'naruto', average_score: 7.9},
+            {name: 'bleach', average_score: 6.8},
+            {name: 'one piece', average_score: 8},
+            {name: 'shingeki', average_score: 9.1}
+          ],
+          year: 2016,
+        }
+      },
+      {
+        type: 'FETCH_ANIMELIST_COMPLETE'
+      }
+    ]
+    const store = mockStore({
+      config: { token: { access_token: 'wtw45CmyEuh4P621IDVxWkgVr5QwTg3wXEc4Z7Cv' }},
+      years: []
+    })
+
+    return store.dispatch(getYear(2016))
+      //This calls fetch 4 times, once for each season
+      .then(() => { // return of async actions
+        expect(store.getActions()).toEqual(expectedActions)
+      })
+  });
 })
 ```
