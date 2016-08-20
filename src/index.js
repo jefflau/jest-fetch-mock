@@ -49,6 +49,14 @@ fetch.mockResponseOnce = (body, init) => {
   );
 };
 
+fetch.mockResponses = (...responses) => {
+  responses.forEach(([ body, init ]) => {
+    fetch.mockImplementationOnce(
+      () => Promise.resolve(new ResponseWrapper(body, init)),
+    );
+  })
+};
+
 // Default mock is just a empty string.
 fetch.mockResponse('');
 
