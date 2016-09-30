@@ -8,7 +8,7 @@
 
 require('whatwg-fetch');
 
-const ActualResponse = self.Response;
+const ActualResponse = Response;
 
 function ResponseWrapper(body, init) {
   if (
@@ -34,9 +34,9 @@ function ResponseWrapper(body, init) {
 }
 
 const fetch = jest.fn();
-fetch.Headers = self.Headers;
+fetch.Headers = Headers;
 fetch.Response = ResponseWrapper;
-fetch.Request = self.Request;
+fetch.Request = Request;
 fetch.mockResponse = (body, init) => {
   fetch.mockImplementation(
     () => Promise.resolve(new ResponseWrapper(body, init))
