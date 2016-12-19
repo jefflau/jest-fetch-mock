@@ -6,7 +6,7 @@
  * See https://fetch.spec.whatwg.org/
  */
 
-require('whatwg-fetch');
+const { Response, Headers, Request } = require('whatwg-fetch');
 
 const ActualResponse = Response;
 
