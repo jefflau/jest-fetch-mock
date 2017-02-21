@@ -39,7 +39,14 @@ fetch.Response = ResponseWrapper;
 fetch.Request = Request;
 fetch.mockResponse = (body, init) => {
   fetch.mockImplementation(
-    () => Promise.resolve(new ResponseWrapper(body, init))
+    () => {
+      if(init && init.status >= 400) {
+        return Promise.reject(new ResponseWrapper(body, init))
+      }
+      else {
+        return Promise.resolve(new ResponseWrapper(body, init))
+      }
+    }
   );
 };
 
