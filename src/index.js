@@ -33,26 +33,35 @@ function ResponseWrapper(body, init) {
   return new ActualResponse(body, init);
 }
 
+function fetchMockImplementation(body, init) {
+    if(init && init.status >= 400) {
+      return Promise.reject(new ResponseWrapper(body, init))
+    }
+    else {
+      return Promise.resolve(new ResponseWrapper(body, init))
+    }
+}
+
 const fetch = jest.fn();
 fetch.Headers = Headers;
 fetch.Response = ResponseWrapper;
 fetch.Request = Request;
 fetch.mockResponse = (body, init) => {
   fetch.mockImplementation(
-    () => Promise.resolve(new ResponseWrapper(body, init))
+    () => fetchMockImplementation(body, init)
   );
 };
 
 fetch.mockResponseOnce = (body, init) => {
   fetch.mockImplementationOnce(
-    () => Promise.resolve(new ResponseWrapper(body, init))
+    () => fetchMockImplementation(body, init)
   );
 };
 
 fetch.mockResponses = (...responses) => {
   responses.forEach(([ body, init ]) => {
     fetch.mockImplementationOnce(
-      () => Promise.resolve(new ResponseWrapper(body, init))
+      () => fetchMockImplementation(body, init)
     );
   })
 };
