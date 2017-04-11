@@ -57,6 +57,10 @@ fetch.mockResponses = (...responses) => {
   })
 };
 
+fetch.resetMocks = () => {
+  fetch.mockReset();
+};
+
 // Default mock is just a empty string.
 fetch.mockResponse('');
 
