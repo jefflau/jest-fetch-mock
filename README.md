@@ -34,7 +34,7 @@ Add the setupFile to your jest config in package.json:
 * `fetch.mockResponseOnce(body, init)` - Mock each fetch call independently
 * `fetch.mockResponses(...responses)` - Mock multiple fetch calls independently
   * Each argument is an array taking `[body, init]`
-
+* `fetch.resetMocks()` - Clear previously set mocks so they do not bleed into other mocks
 
 For information on the parameters body and init take, you can look at the MDN docs on the Response Constructor function, which `jest-fetch-mock` uses under the surface.
 
@@ -172,5 +172,103 @@ describe('getYear action creator', () => {
         expect(store.getActions()).toEqual(expectedActions)
       })
   });
+})
+```
+
+## Example 4 - Reset mocks between tests with `fetch.resetMocks`
+
+`fetch.resetMocks` resets the `fetch` mock to give fresh mock data in between tests. It only resets the `fetch` calls as to not disturb any other mocked functionality.
+
+```js
+describe('getYear action creator', () => {
+  beforeEach(() => {
+      fetch.resetMocks();
+  });
+  it('dispatches the correct actions on successful getSeason fetch request', () => {
+
+    fetch.mockResponses(
+      [
+        JSON.stringify([ {name: 'naruto', average_score: 79} ]), { status: 200}
+      ],
+      [
+        JSON.stringify([ {name: 'bleach', average_score: 68} ]), { status: 200}
+      ]
+    )
+
+    const expectedActions = [
+      {
+        type: 'FETCH_ANIMELIST_REQUEST'
+      },
+      {
+        type: 'SET_YEAR',
+        payload: {
+          animes: [
+            {name: 'naruto', average_score: 7.9},
+            {name: 'bleach', average_score: 6.8}
+          ],
+          year: 2016,
+        }
+      },
+      {
+        type: 'FETCH_ANIMELIST_COMPLETE'
+      }
+    ]
+    const store = mockStore({
+      config: { token: { access_token: 'wtw45CmyEuh4P621IDVxWkgVr5QwTg3wXEc4Z7Cv' }},
+      years: []
+    })
+
+    return store.dispatch(getYear(2016))
+      //This calls fetch 2 times, once for each season
+      .then(() => { // return of async actions
+        expect(store.getActions()).toEqual(expectedActions)
+      })
+  });
+  it('dispatches the correct actions on successful getSeason fetch request', () => {
+      
+    fetch.mockResponses(
+      [
+        JSON.stringify([ {name: 'bleach', average_score: 68} ]), { status: 200}
+      ],
+      [
+        JSON.stringify([ {name: 'one piece', average_score: 80} ]), { status: 200}
+      ],
+      [
+        JSON.stringify([ {name: 'shingeki', average_score: 91} ]), { status: 200}
+      ]
+    )
+
+    const expectedActions = [
+      {
+        type: 'FETCH_ANIMELIST_REQUEST'
+      },
+      {
+        type: 'SET_YEAR',
+        payload: {
+          animes: [
+            {name: 'bleach', average_score: 6.8},
+            {name: 'one piece', average_score: 8},
+            {name: 'shingeki', average_score: 9.1}
+          ],
+          year: 2016,
+        }
+      },
+      {
+        type: 'FETCH_ANIMELIST_COMPLETE'
+      }
+    ]
+    const store = mockStore({
+      config: { token: { access_token: 'wtw45CmyEuh4P621IDVxWkgVr5QwTg3wXEc4Z7Cv' }},
+      years: []
+    })
+
+    return store.dispatch(getYear(2016))
+      //This calls fetch 3 times, once for each season
+      .then(() => { // return of async actions
+        expect(store.getActions()).toEqual(expectedActions)
+      })
+      ,
+      
+  })
 })
 ```
