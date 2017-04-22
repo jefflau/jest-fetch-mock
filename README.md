@@ -40,6 +40,8 @@ For information on the parameters body and init take, you can look at the MDN do
 
 https://developer.mozilla.org/en-US/docs/Web/API/Response/Response
 
+Each API will return a [Mock Function](http://facebook.github.io/jest/docs/mock-function-api.html#content). You can use methods like `.toHaveBeenCalledWith` to ensure that the mock function was called with specific arguments. For more methods detail, take a look at [this](http://facebook.github.io/jest/docs/expect.html#content).
+
 In the examples below, I am testing my action creators in Redux, but it doesn't have to be used with Redux.
 
 ## Example 1 - Mocking all fetches
