@@ -28,7 +28,7 @@ Add the setupFile to your jest config in package.json:
 }
 ```
 
-##API
+## API
 
 * `fetch.mockResponse(body, init)` - Mock all fetch calls
 * `fetch.mockResponseOnce(body, init)` - Mock each fetch call independently
@@ -80,7 +80,7 @@ describe('Access token action creators', () => {
 
 ```
 
-##Example 2 - Mocking multiple fetches with different responses
+## Example 2 - Mocking multiple fetches with different responses
 
 In this next example, the store does not yet have a token, so we make a request to get an access token first. This means that we need to mock two different responses, one for each of the fetches. Here we can use `fetch.mockResponseOnce` to mock the response only once, which internally uses jest's `mockImplementationOnce`. You can read more about it on the [Jest documentation](https://facebook.github.io/jest/docs/mock-functions.html#content)
 
@@ -116,7 +116,7 @@ describe('Anime details action creators', () => {
 })
 ```
 
-##Example 3 - Mocking multiple fetches with `fetch.mockResponses`
+## Example 3 - Mocking multiple fetches with `fetch.mockResponses`
 
 `fetch.mockResponses` takes as many arguments as you give it, all of which are arrays representing each Response Object. It will then call the `mockImplementationOnce` for each response object you give it. This reduces the amount of boilerplate code you need to write.
 
