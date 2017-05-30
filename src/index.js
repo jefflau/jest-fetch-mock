@@ -55,6 +55,7 @@ fetch.mockResponseOnce = (body, init) => {
   );
 };
 
+
 fetch.mockRejectOnce = () => {
   return fetch.mockImplementationOnce(
     () => Promise.reject()
