@@ -46,7 +46,7 @@ In the examples below, I am testing my action creators in Redux, but it doesn't 
 
 ## Example 1 - Mocking all fetches
 
-In this example I am mocking just one fetch call. Any additional fetch calls in the same function will also have the same mock response. For more complicated functions with multiple fetch calls, you can check out example 2.
+In this example I am mocking just one fetch call. Any additional fetch calls in the same function will also have the same mock response. For more complicated functions with multiple fetch calls, you can check out example 3.
 
 ```js
 import configureMockStore from 'redux-mock-store' // mock store
@@ -80,7 +80,43 @@ describe('Access token action creators', () => {
 
 ```
 
-## Example 2 - Mocking multiple fetches with different responses
+## Example 2 - Mocking a failed fetch
+
+In this example I am mocking just one fetch call but this time using the `mockReject` function to simulate a failed request. Any additional fetch calls in the same function will also have the same mock response. For more complicated functions with multiple fetch calls, you can check out example 3.
+
+```js
+import configureMockStore from 'redux-mock-store' // mock store
+import thunk from 'redux-thunk'
+
+const middlewares = [ thunk ]
+const mockStore = configureMockStore(middlewares)
+
+import { getAccessToken } from './accessToken'
+
+describe('Access token action creators', () => {
+
+  it('dispatches the correct actions on successful fetch request', () => {
+
+    fetch.mockReject()
+
+    const expectedActions = [
+      { type: 'SET_ACCESS_TOKEN_FAILED', error: {status: 503}}
+    ]
+    const store = mockStore({ config: {token: "" } })
+
+    return store.dispatch(getAccessToken())
+      //getAccessToken contains the fetch call
+      .then(() => { // return of async actions
+        expect(store.getActions()).toEqual(expectedActions)
+      })
+
+  });
+
+})
+
+```
+
+## Example 3 - Mocking multiple fetches with different responses
 
 In this next example, the store does not yet have a token, so we make a request to get an access token first. This means that we need to mock two different responses, one for each of the fetches. Here we can use `fetch.mockResponseOnce` to mock the response only once, which internally uses jest's `mockImplementationOnce`. You can read more about it on the [Jest documentation](https://facebook.github.io/jest/docs/mock-functions.html#content)
 
@@ -116,7 +152,7 @@ describe('Anime details action creators', () => {
 })
 ```
 
-## Example 3 - Mocking multiple fetches with `fetch.mockResponses`
+## Example 4 - Mocking multiple fetches with `fetch.mockResponses`
 
 `fetch.mockResponses` takes as many arguments as you give it, all of which are arrays representing each Response Object. It will then call the `mockImplementationOnce` for each response object you give it. This reduces the amount of boilerplate code you need to write.
 
@@ -175,7 +211,7 @@ describe('getYear action creator', () => {
 })
 ```
 
-## Example 4 - Reset mocks between tests with `fetch.resetMocks`
+## Example 5 - Reset mocks between tests with `fetch.resetMocks`
 
 `fetch.resetMocks` resets the `fetch` mock to give fresh mock data in between tests. It only resets the `fetch` calls as to not disturb any other mocked functionality.
 
