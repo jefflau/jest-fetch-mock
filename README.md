@@ -95,7 +95,7 @@ import { getAccessToken } from './accessToken'
 
 describe('Access token action creators', () => {
 
-  it('dispatches the correct actions on successful fetch request', () => {
+  it('dispatches the correct actions on a failed fetch request', () => {
 
     fetch.mockReject()
 
