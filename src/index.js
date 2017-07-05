@@ -43,9 +43,22 @@ fetch.mockResponse = (body, init) => {
   );
 };
 
+fetch.mockReject = () => {
+  return fetch.mockImplementation(
+    () => Promise.reject()
+  );
+};
+
 fetch.mockResponseOnce = (body, init) => {
   return fetch.mockImplementationOnce(
     () => Promise.resolve(new ResponseWrapper(body, init))
+  );
+};
+
+
+fetch.mockRejectOnce = () => {
+  return fetch.mockImplementationOnce(
+    () => Promise.reject()
   );
 };
 
