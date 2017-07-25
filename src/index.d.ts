@@ -1,5 +1,5 @@
 declare interface MockParams {
-  status?: string;
+  status?: number;
   statusText?: string;
   url?: string;
   headers?: Object;
