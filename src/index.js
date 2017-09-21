@@ -1,4 +1,4 @@
-/**
+p/**
  * Copyright 2004-present Facebook. All Rights Reserved.
  *
  * Implements basic mock for the fetch interface use `whatwg-fetch` polyfill.
@@ -8,14 +8,12 @@
 
 require('whatwg-fetch');
 
-const ActualResponse = Response;
-
 function ResponseWrapper(body, init) {
   if (
     typeof body.constructor === 'function' &&
     body.constructor.__isFallback
   ) {
-    const response = new ActualResponse(null, init);
+    const response = new Response(null, init);
     response.body = body;
 
     const actualClone = response.clone;
@@ -26,11 +24,11 @@ function ResponseWrapper(body, init) {
       clone.body = body2;
       return clone;
     };
-
+    
     return response;
   }
-
-  return new ActualResponse(body, init);
+  
+  return new Response(body, init);
 }
 
 const fetch = jest.fn();
@@ -43,9 +41,9 @@ fetch.mockResponse = (body, init) => {
   );
 };
 
-fetch.mockReject = () => {
+fetch.mockReject = (error) => {
   return fetch.mockImplementation(
-    () => Promise.reject()
+    () => Promise.reject(error)
   );
 };
 
