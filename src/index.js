@@ -6,7 +6,7 @@
  * See https://fetch.spec.whatwg.org/
  */
 
-require('whatwg-fetch');
+require('isomoprhic-fetch');
 
 const ActualResponse = Response;
 

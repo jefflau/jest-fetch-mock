@@ -22,6 +22,6 @@
   },
   "homepage": "https://github.com/jefflau/jest-fetch-mock#readme",
   "dependencies": {
-    "whatwg-fetch": "1.0.0"
+    "isomorphic-fetch": "^2.2.1"
   }
 }
