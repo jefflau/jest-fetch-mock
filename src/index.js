@@ -1,11 +1,3 @@
-/**
- * Copyright 2004-present Facebook. All Rights Reserved.
- *
- * Implements basic mock for the fetch interface use `whatwg-fetch` polyfill.
- *
- * See https://fetch.spec.whatwg.org/
- */
-
 require('isomoprhic-fetch');
 
 const ActualResponse = Response;
