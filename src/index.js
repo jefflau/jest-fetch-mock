@@ -1,4 +1,4 @@
-require('isomoprhic-fetch');
+require('isomorphic-fetch');
 
 const ActualResponse = Response;
 
