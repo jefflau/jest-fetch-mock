@@ -15,6 +15,7 @@ Create a setupJest file to setup the mock or add this to an existing setupFile:
 ```js
 //setupJest.js
 global.fetch = require('jest-fetch-mock');
+global.fetch.mockJson = (json) => global.fetch.mockResponse(JSON.stringify(json));
 ```
 
 Add the setupFile to your jest config in package.json:
