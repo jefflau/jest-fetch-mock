@@ -35,9 +35,9 @@ fetch.mockResponse = (body, init) => {
   );
 };
 
-fetch.mockReject = () => {
+fetch.mockReject = (error) => {
   return fetch.mockImplementation(
-    () => Promise.reject()
+    () => Promise.reject(error)
   );
 };
 
@@ -48,9 +48,9 @@ fetch.mockResponseOnce = (body, init) => {
 };
 
 
-fetch.mockRejectOnce = () => {
+fetch.mockRejectOnce = (error) => {
   return fetch.mockImplementationOnce(
-    () => Promise.reject()
+    () => Promise.reject(error)
   );
 };
 
