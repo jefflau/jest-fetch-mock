@@ -34,8 +34,8 @@ Add the setupFile to your jest config in package.json:
 * `fetch.mockResponseOnce(body, init)` - Mock each fetch call independently
 * `fetch.mockResponses(...responses)` - Mock multiple fetch calls independently
   * Each argument is an array taking `[body, init]`
-* `fetch.mockReject()` - Mock all fetch calls, letting them fail directly
-* `fetch.mockRejectOnce()` - Let the next fetch call fail directly
+* `fetch.mockReject(error)` - Mock all fetch calls, letting them fail directly
+* `fetch.mockRejectOnce(error)` - Let the next fetch call fail directly
 * `fetch.resetMocks()` - Clear previously set mocks so they do not bleed into other mocks
 
 For information on the parameters body and init take, you can look at the MDN docs on the Response Constructor function, which `jest-fetch-mock` uses under the surface.
@@ -99,7 +99,7 @@ describe('Access token action creators', () => {
 
   it('dispatches the correct actions on a failed fetch request', () => {
 
-    fetch.mockReject()
+    fetch.mockReject(new Error('fake error message'))
 
     const expectedActions = [
       { type: 'SET_ACCESS_TOKEN_FAILED', error: {status: 503}}
