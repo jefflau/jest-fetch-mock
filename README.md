@@ -10,14 +10,14 @@ To setup your fetch mock you need to do the following things:
 $ npm install --save-dev jest-fetch-mock
 ```
 
-Create a setupJest file to setup the mock or add this to an existing setupFile:
+Create a `setupJest` file to setup the mock or add this to an existing `setupFile`. :
 
 ```js
-//setupJest.js
+//setupJest.js or similar file
 global.fetch = require('jest-fetch-mock');
 ```
 
-Add the setupFile to your jest config in package.json:
+Add the setupFile to your jest config in `package.json`:
 
 ```JSON
 "jest": {
@@ -27,6 +27,10 @@ Add the setupFile to your jest config in package.json:
   ]
 }
 ```
+
+### Using with Create-React-App
+
+If you are using [Create-React-App](https://github.com/facebookincubator/create-react-app) (CRA), the code for `setupTest.js` above should be placed into `src/setupTests.js` in the root of your project.  CRA automatically uses this filename by convention in the Jest configuration it generates.  Similarly, changing to your `package.json` is not required as CRA handles this when generating your Jest configuration.
 
 ## API
 
