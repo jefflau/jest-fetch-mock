@@ -3,6 +3,7 @@
   "version": "1.4.0",
   "description": "fetch mock for jest",
   "main": "src/index.js",
+  "types": "src/index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
