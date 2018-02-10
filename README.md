@@ -32,6 +32,14 @@ Add the setupFile to your jest config in `package.json`:
 
 If you are using [Create-React-App](https://github.com/facebookincubator/create-react-app) (CRA), the code for `setupTest.js` above should be placed into `src/setupTests.js` in the root of your project.  CRA automatically uses this filename by convention in the Jest configuration it generates.  Similarly, changing to your `package.json` is not required as CRA handles this when generating your Jest configuration.
 
+> Note: Keep in mind that if you decide to "eject" before creating src/setupTests.js, the resulting package.json file won't contain any reference to it, so you should manually create the property setupTestFrameworkScriptFile in the configuration for Jest, something like the [following](https://github.com/facebook/create-react-app/blob/master/packages/react-scripts/template/README.md#srcsetuptestsjs-1):
+
+```JSON
+"jest": {
+  "setupTestFrameworkScriptFile": "<rootDir>/src/setupTests.js"
+ }
+```
+
 ## API
 
 * `fetch.mockResponse(body, init)` - Mock all fetch calls
