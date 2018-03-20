@@ -12,7 +12,7 @@ Fetch is the new way to do HTTP requests in the browser, and it can be used in o
   * [Mocking all fetches](#mocking-all-fetches)
   * [Mocking a failed fetch](#mocking-a-failed-fetch)
   * [Mocking multiple fetches with different responses](#mocking-multiple-fetches-with-different-responses)
-  * [Mocking multiple fetches with `fetch.mockResponses`](#mocking-multiple-fetches-with-fetch-mockresponses)
+  * [Mocking multiple fetches with `fetch.mockResponses`](#mocking-multiple-fetches-with-fetchmockresponses)
   * [Reset mocks between tests with `fetch.resetMocks`](#reset-mocks-between-tests-with-fetchresetmocks)
 
 ## Usage
