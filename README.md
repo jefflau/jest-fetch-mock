@@ -16,6 +16,7 @@ It currently supports the mocking of the go-to isomorphic polyfill for fetch, [`
   * [Mocking multiple fetches with different responses](#mocking-multiple-fetches-with-different-responses)
   * [Mocking multiple fetches with `fetch.mockResponses`](#mocking-multiple-fetches-with-fetchmockresponses)
   * [Reset mocks between tests with `fetch.resetMocks`](#reset-mocks-between-tests-with-fetchresetmocks)
+  * [Using `fetch.mock` to inspect the mock state of each fetch call](using-fetchmock-to-inspect-the-mock-state-of-each-fetch-call)
 
 ## Usage
 
