@@ -1,6 +1,8 @@
 # Jest Fetch Mock
 
-Fetch is the new way to do HTTP requests in the browser, and it can be used in other environments such as React Native. Jest Fetch Mock allows you to easily mock your `fetch` calls and return the response you need to fake the HTTP requests. It's easy to setup and you don't need a library like `nock` to get going and it uses Jest's built-in support for mocking under the surface. It currently supports the mocking of the go-to isomorphic polyfill for fetch, [`isomorphic-fetch`](https://github.com/matthew-andrews/isomorphic-fetch), so it supports Node.js and any browser-like runtime.
+Fetch is the new way to do HTTP requests in the browser, and it can be used in other environments such as React Native. Jest Fetch Mock allows you to easily mock your `fetch` calls and return the response you need to fake the HTTP requests. It's easy to setup and you don't need a library like `nock` to get going and it uses Jest's built-in support for mocking under the surface. This means that any of the `jest.fn()` methods are also available. For more information on the jest mock API, check their docs [here](https://facebook.github.io/jest/docs/en/mock-functions.html)
+
+It currently supports the mocking of the go-to isomorphic polyfill for fetch, [`isomorphic-fetch`](https://github.com/matthew-andrews/isomorphic-fetch), so it supports Node.js and any browser-like runtime.
 
 ## Contents
 
@@ -64,6 +66,7 @@ If you are using [Create-React-App](https://github.com/facebookincubator/create-
 * `fetch.mockReject(error)` - Mock all fetch calls, letting them fail directly
 * `fetch.mockRejectOnce(error)` - Let the next fetch call fail directly
 * `fetch.resetMocks()` - Clear previously set mocks so they do not bleed into other mocks
+* `fetch.mock` - The mock state for your fetch calls. Make assertions on the arguments given to `fetch` when called by the functions you are testing. For more information check the [Jest docs](https://facebook.github.io/jest/docs/en/mock-functions.html#mock-property)
 
 For information on the parameters body and init take, you can look at the MDN docs on the Response Constructor function, which `jest-fetch-mock` uses under the surface.
 
@@ -346,4 +349,62 @@ describe('getYear action creator', () => {
 
   })
 })
+```
+
+### Using `fetch.mock` to inspect the mock state of each fetch call
+
+`fetch.mock` by default uses [Jest's mocking functions](https://facebook.github.io/jest/docs/en/mock-functions.html#mock-property). Therefore you can make assertions on the mock state. In this example we have an arbitrary function that makes a different fetch request based on the argument you pass to it. In our test, we run Jest's `beforeEach()` and make sure to reset our mock before each `it()` block as we will make assertions on the arguments we are passing to `fetch()`. The most uses property is the `fetch.mock.calls` array. It can give you information on each call, and their arguments which you can use for your `expect()` calls. Jest also comes with some nice aliases for the most used ones.
+
+```js
+// api.js
+
+import 'isomorphic-fetch';
+
+export function APIRequest(who) {
+  if (who === 'facebook') {
+    return fetch('https://facebook.com');
+  } else if (who === 'twitter') {
+    return fetch('https://twitter.com');
+  } else {
+    return fetch('https://google.com');
+  }
+}
+```
+
+```js
+// api.test.js
+import { APIRequest } from './api';
+
+describe('testing api', () => {
+  beforeEach(() => {
+    fetch.resetMocks();
+  });
+
+  it('calls google by default', () => {
+    fetch.mockResponse(JSON.stringify({ secret_data: '12345' }));
+    APIRequest();
+
+    expect(fetch.mock.calls.length).toEqual(1);
+    expect(fetch.mock.calls[0][0]).toEqual('https://google.com');
+  });
+
+  it('calls facebook', () => {
+    fetch.mockResponse(JSON.stringify({ secret_data: '12345' }));
+    APIRequest('facebook');
+
+    expect(fetch.mock.calls.length).toEqual(2);
+    expect(fetch.mock.calls[0][0]).toEqual(
+      'https://facebook.com/someOtherResource'
+    );
+    expect(fetch.mock.calls[1][0]).toEqual('https://facebook.com');
+  });
+
+  it('calls twitter', () => {
+    fetch.mockResponse(JSON.stringify({ secret_data: '12345' }));
+    APIRequest('twitter');
+
+    expect(fetch).toBeCalled(); // alias for expect(fetch.mock.calls.length).toEqual(1);
+    expect(fetch).toBeCalledWith('https://twitter.com'); // alias for expect(fetch.mock.calls[0][0]).toEqual();
+  });
+});
 ```
