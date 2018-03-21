@@ -11,6 +11,7 @@ It currently supports the mocking of the go-to isomorphic polyfill for fetch, [`
   * [Using with Create-React-App](#using-with-create-react-app)
 * [API](#api)
 * [Examples](#examples)
+  * [Simple mock](#simple-mock)
   * [Mocking all fetches](#mocking-all-fetches)
   * [Mocking a failed fetch](#mocking-a-failed-fetch)
   * [Mocking multiple fetches with different responses](#mocking-multiple-fetches-with-different-responses)
@@ -84,7 +85,50 @@ or will return a [Mock Function](http://facebook.github.io/jest/docs/mock-functi
 
 ## Examples
 
-In the examples below, I am testing my action creators in Redux, but it doesn't have to be used with Redux.
+In most of the complicated examples below, I am testing my action creators in Redux, but it doesn't have to be used with Redux.
+
+### Simple mock and assert
+
+In this simple example I won't be using any libraries. It is a simple fetch request, in this case to google.com. We want to give it a mocked response with a `data` property and a string value of `12345`. Here we use `mockResponseOnce`, but we could also use `once`, and alias or `mockResponse`, which mocks all responses. Since we only have one fetch request here, it doesn't really matter which one we use.
+
+We then call the function that we want to test with the arguments we want to test with. In the `then` callback we assert we have got the correct data back.
+
+Finally we can assert on the `.mock` state that Jest provides for us.
+
+```js
+//api.js
+export function APIRequest(who) {
+  if (who === 'google') {
+    return fetch('https://google.com').then(res => res.json())
+  } else {
+    return 'no argument provided'
+  }
+}
+```
+
+```js
+//api.test.js
+import { APIRequest } from './api'
+
+describe('testing api', () => {
+  beforeEach(() => {
+    fetch.resetMocks()
+  })
+
+  it('calls google and returns data to me', () => {
+    fetch.mockResponseOnce(JSON.stringify({ data: '12345' }))
+
+    //assert on the response
+    APIRequest2('google').then(res => {
+      expect(res.data).toEqual('12345')
+    })
+
+    //assert on the times called and arguments given to fetch
+    expect(fetch.mock.calls.length).toEqual(1)
+    expect(fetch.mock.calls[0][0]).toEqual('https://google.com')
+  })
+})
+```
 
 ### Mocking all fetches
 
