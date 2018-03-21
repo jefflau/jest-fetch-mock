@@ -3,10 +3,7 @@ require('isomorphic-fetch');
 const ActualResponse = Response;
 
 function ResponseWrapper(body, init) {
-  if (
-    typeof body.constructor === 'function' &&
-    body.constructor.__isFallback
-  ) {
+  if (typeof body.constructor === 'function' && body.constructor.__isFallback) {
     const response = new ActualResponse(null, init);
     response.body = body;
 
@@ -30,36 +27,32 @@ fetch.Headers = Headers;
 fetch.Response = ResponseWrapper;
 fetch.Request = Request;
 fetch.mockResponse = (body, init) => {
-  return fetch.mockImplementation(
-    () => Promise.resolve(new ResponseWrapper(body, init))
+  return fetch.mockImplementation(() =>
+    Promise.resolve(new ResponseWrapper(body, init))
   );
 };
 
-fetch.mockReject = (error) => {
-  return fetch.mockImplementation(
-    () => Promise.reject(error)
-  );
+fetch.mockReject = error => {
+  return fetch.mockImplementation(() => Promise.reject(error));
 };
 
 fetch.mockResponseOnce = (body, init) => {
-  return fetch.mockImplementationOnce(
-    () => Promise.resolve(new ResponseWrapper(body, init))
+  return fetch.mockImplementationOnce(() =>
+    Promise.resolve(new ResponseWrapper(body, init))
   );
 };
 
-
-fetch.mockRejectOnce = (error) => {
-  return fetch.mockImplementationOnce(
-    () => Promise.reject(error)
-  );
+fetch.mockRejectOnce = error => {
+  return fetch.mockImplementationOnce(() => Promise.reject(error));
 };
 
 fetch.mockResponses = (...responses) => {
-  return responses.map(([ body, init ]) => {
-    return fetch.mockImplementationOnce(
-      () => Promise.resolve(new ResponseWrapper(body, init))
+  responses.forEach(([body, init]) => {
+    fetch.mockImplementationOnce(() =>
+      Promise.resolve(new ResponseWrapper(body, init))
     );
-  })
+  });
+  return fetch;
 };
 
 fetch.resetMocks = () => {
