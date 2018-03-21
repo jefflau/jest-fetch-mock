@@ -71,7 +71,7 @@ If you are using [Create-React-App](https://github.com/facebookincubator/create-
 * `fetch.mockReject(error): fetch` - Mock all fetch calls, letting them fail directly
 * `fetch.mockRejectOnce(error): fetch` - Let the next fetch call fail directly
 
-### Mock utilties
+### Mock utilities
 
 * `fetch.resetMocks()` - Clear previously set mocks so they do not bleed into other mocks
 * `fetch.mock` - The mock state for your fetch calls. Make assertions on the arguments given to `fetch` when called by the functions you are testing. For more information check the [Jest docs](https://facebook.github.io/jest/docs/en/mock-functions.html#mock-property)
