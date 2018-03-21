@@ -1,65 +1,69 @@
-require('isomorphic-fetch');
+require('isomorphic-fetch')
 
-const ActualResponse = Response;
+const ActualResponse = Response
 
 function ResponseWrapper(body, init) {
   if (typeof body.constructor === 'function' && body.constructor.__isFallback) {
-    const response = new ActualResponse(null, init);
-    response.body = body;
+    const response = new ActualResponse(null, init)
+    response.body = body
 
-    const actualClone = response.clone;
+    const actualClone = response.clone
     response.clone = () => {
-      const clone = actualClone.call(response);
-      const [body1, body2] = body.tee();
-      response.body = body1;
-      clone.body = body2;
-      return clone;
-    };
+      const clone = actualClone.call(response)
+      const [body1, body2] = body.tee()
+      response.body = body1
+      clone.body = body2
+      return clone
+    }
 
-    return response;
+    return response
   }
 
-  return new ActualResponse(body, init);
+  return new ActualResponse(body, init)
 }
 
-const fetch = jest.fn();
-fetch.Headers = Headers;
-fetch.Response = ResponseWrapper;
-fetch.Request = Request;
+const fetch = jest.fn()
+fetch.Headers = Headers
+fetch.Response = ResponseWrapper
+fetch.Request = Request
 fetch.mockResponse = (body, init) => {
   return fetch.mockImplementation(() =>
     Promise.resolve(new ResponseWrapper(body, init))
-  );
-};
+  )
+}
 
 fetch.mockReject = error => {
-  return fetch.mockImplementation(() => Promise.reject(error));
-};
+  return fetch.mockImplementation(() => Promise.reject(error))
+}
 
-fetch.mockResponseOnce = (body, init) => {
+const mockResponseOnce = (body, init) => {
   return fetch.mockImplementationOnce(() =>
     Promise.resolve(new ResponseWrapper(body, init))
-  );
-};
+  )
+}
+
+fetch.mockResponseOnce = mockResponseOnce
+
+fetch.once = mockResponseOnce
 
 fetch.mockRejectOnce = error => {
-  return fetch.mockImplementationOnce(() => Promise.reject(error));
-};
+  return fetch.mockImplementationOnce(() => Promise.reject(error))
+}
 
 fetch.mockResponses = (...responses) => {
   responses.forEach(([body, init]) => {
     fetch.mockImplementationOnce(() =>
       Promise.resolve(new ResponseWrapper(body, init))
-    );
-  });
-  return fetch;
-};
+    )
+  })
+  return fetch
+}
 
 fetch.resetMocks = () => {
-  fetch.mockReset();
-};
+  fetch.mockReset()
+}
 
 // Default mock is just a empty string.
-fetch.mockResponse('');
+fetch.mockResponse('')
 
-module.exports = fetch;
+module.exports = fetch

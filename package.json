@@ -11,11 +11,7 @@
     "type": "git",
     "url": "git+https://github.com/jefflau/jest-fetch-mock.git"
   },
-  "keywords": [
-    "jest",
-    "mock",
-    "fetch"
-  ],
+  "keywords": ["jest", "mock", "fetch"],
   "author": "Jeff Lau <jeff-lau@live.com> (http://jefflau.net/)",
   "license": "MIT",
   "bugs": {
@@ -24,5 +20,10 @@
   "homepage": "https://github.com/jefflau/jest-fetch-mock#readme",
   "dependencies": {
     "isomorphic-fetch": "^2.2.1"
+  },
+  "prettier": {
+    "semi": false,
+    "editor.formatOnSave": true,
+    "singleQuote": true
   }
 }

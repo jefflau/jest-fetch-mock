@@ -32,7 +32,7 @@ Create a `setupJest` file to setup the mock or add this to an existing `setupFil
 
 ```js
 //setupJest.js or similar file
-global.fetch = require('jest-fetch-mock');
+global.fetch = require('jest-fetch-mock')
 ```
 
 Add the setupFile to your jest config in `package.json`:
@@ -60,12 +60,18 @@ If you are using [Create-React-App](https://github.com/facebookincubator/create-
 
 ## API
 
-* `fetch.mockResponse(body, init)` - Mock all fetch calls
-* `fetch.mockResponseOnce(body, init)` - Mock each fetch call independently
-* `fetch.mockResponses(...responses)` - Mock multiple fetch calls independently
+### Mock Responses
+
+* `fetch.mockResponse(body, init): fetch` - Mock all fetch calls
+* `fetch.mockResponseOnce(body, init): fetch` - Mock each fetch call independently
+* `fetch.once(body, init): fetch` - Alias for mockResponseOnce
+* `fetch.mockResponses(...responses): fetch` - Mock multiple fetch calls independently
   * Each argument is an array taking `[body, init]`
-* `fetch.mockReject(error)` - Mock all fetch calls, letting them fail directly
-* `fetch.mockRejectOnce(error)` - Let the next fetch call fail directly
+* `fetch.mockReject(error): fetch` - Mock all fetch calls, letting them fail directly
+* `fetch.mockRejectOnce(error): fetch` - Let the next fetch call fail directly
+
+### Mock utilties
+
 * `fetch.resetMocks()` - Clear previously set mocks so they do not bleed into other mocks
 * `fetch.mock` - The mock state for your fetch calls. Make assertions on the arguments given to `fetch` when called by the functions you are testing. For more information check the [Jest docs](https://facebook.github.io/jest/docs/en/mock-functions.html#mock-property)
 
@@ -73,7 +79,7 @@ For information on the parameters body and init take, you can look at the MDN do
 
 https://developer.mozilla.org/en-US/docs/Web/API/Response/Response
 
-Each API will return a [Mock Function](http://facebook.github.io/jest/docs/mock-function-api.html#content). You can use methods like `.toHaveBeenCalledWith` to ensure that the mock function was called with specific arguments. For more methods detail, take a look at [this](http://facebook.github.io/jest/docs/expect.html#content).
+Each mocked response or error will return a [Mock Function](http://facebook.github.io/jest/docs/mock-function-api.html#content). You can use methods like `.toHaveBeenCalledWith` to ensure that the mock function was called with specific arguments. For more methods detail, take a look at [this](http://facebook.github.io/jest/docs/expect.html#content).
 
 ## Examples
 
@@ -84,22 +90,22 @@ In the examples below, I am testing my action creators in Redux, but it doesn't 
 In this example I am mocking just one fetch call. Any additional fetch calls in the same function will also have the same mock response. For more complicated functions with multiple fetch calls, you can check out example 3.
 
 ```js
-import configureMockStore from 'redux-mock-store'; // mock store
-import thunk from 'redux-thunk';
+import configureMockStore from 'redux-mock-store' // mock store
+import thunk from 'redux-thunk'
 
-const middlewares = [thunk];
-const mockStore = configureMockStore(middlewares);
+const middlewares = [thunk]
+const mockStore = configureMockStore(middlewares)
 
-import { getAccessToken } from './accessToken';
+import { getAccessToken } from './accessToken'
 
 describe('Access token action creators', () => {
   it('dispatches the correct actions on successful fetch request', () => {
-    fetch.mockResponse(JSON.stringify({ access_token: '12345' }));
+    fetch.mockResponse(JSON.stringify({ access_token: '12345' }))
 
     const expectedActions = [
       { type: 'SET_ACCESS_TOKEN', token: { access_token: '12345' } }
-    ];
-    const store = mockStore({ config: { token: '' } });
+    ]
+    const store = mockStore({ config: { token: '' } })
 
     return (
       store
@@ -107,11 +113,11 @@ describe('Access token action creators', () => {
         //getAccessToken contains the fetch call
         .then(() => {
           // return of async actions
-          expect(store.getActions()).toEqual(expectedActions);
+          expect(store.getActions()).toEqual(expectedActions)
         })
-    );
-  });
-});
+    )
+  })
+})
 ```
 
 ### Mocking a failed fetch
@@ -119,22 +125,22 @@ describe('Access token action creators', () => {
 In this example I am mocking just one fetch call but this time using the `mockReject` function to simulate a failed request. Any additional fetch calls in the same function will also have the same mock response. For more complicated functions with multiple fetch calls, you can check out example 3.
 
 ```js
-import configureMockStore from 'redux-mock-store'; // mock store
-import thunk from 'redux-thunk';
+import configureMockStore from 'redux-mock-store' // mock store
+import thunk from 'redux-thunk'
 
-const middlewares = [thunk];
-const mockStore = configureMockStore(middlewares);
+const middlewares = [thunk]
+const mockStore = configureMockStore(middlewares)
 
-import { getAccessToken } from './accessToken';
+import { getAccessToken } from './accessToken'
 
 describe('Access token action creators', () => {
   it('dispatches the correct actions on a failed fetch request', () => {
-    fetch.mockReject(new Error('fake error message'));
+    fetch.mockReject(new Error('fake error message'))
 
     const expectedActions = [
       { type: 'SET_ACCESS_TOKEN_FAILED', error: { status: 503 } }
-    ];
-    const store = mockStore({ config: { token: '' } });
+    ]
+    const store = mockStore({ config: { token: '' } })
 
     return (
       store
@@ -142,36 +148,40 @@ describe('Access token action creators', () => {
         //getAccessToken contains the fetch call
         .then(() => {
           // return of async actions
-          expect(store.getActions()).toEqual(expectedActions);
+          expect(store.getActions()).toEqual(expectedActions)
         })
-    );
-  });
-});
+    )
+  })
+})
 ```
 
 ### Mocking multiple fetches with different responses
 
-In this next example, the store does not yet have a token, so we make a request to get an access token first. This means that we need to mock two different responses, one for each of the fetches. Here we can use `fetch.mockResponseOnce` to mock the response only once, which internally uses jest's `mockImplementationOnce`. You can read more about it on the [Jest documentation](https://facebook.github.io/jest/docs/mock-functions.html#content)
+In this next example, the store does not yet have a token, so we make a request to get an access token first. This means that we need to mock two different responses, one for each of the fetches. Here we can use `fetch.mockResponseOnce` or `fetch.once` to mock the response only once and call it twice. Because we return the mocked function, we can chain this jQuery style. It internally uses Jest's `mockImplementationOnce`. You can read more about it on the [Jest documentation](https://facebook.github.io/jest/docs/mock-functions.html#content)
 
 ```js
-import configureMockStore from 'redux-mock-store';
-import thunk from 'redux-thunk';
+import configureMockStore from 'redux-mock-store'
+import thunk from 'redux-thunk'
 
-const middlewares = [thunk];
-const mockStore = configureMockStore(middlewares);
+const middlewares = [thunk]
+const mockStore = configureMockStore(middlewares)
 
-import { getAnimeDetails } from './animeDetails';
+import { getAnimeDetails } from './animeDetails'
 
 describe('Anime details action creators', () => {
   it('dispatches requests for an access token before requesting for animeDetails', () => {
-    fetch.mockResponseOnce(JSON.stringify({ access_token: '12345' }));
-    fetch.mockResponseOnce(JSON.stringify({ name: 'naruto' }));
+    fetch
+      .once(JSON.stringify({ access_token: '12345' }))
+      .once(JSON.stringify({ name: 'naruto' }))
+
+    //once is an alias for .mockResponseOnce
+    //
 
     const expectedActions = [
       { type: 'SET_ACCESS_TOKEN', token: { access_token: '12345' } },
       { type: 'SET_ANIME_DETAILS', animeDetails: { name: 'naruto' } }
-    ];
-    const store = mockStore({ config: { token: null } });
+    ]
+    const store = mockStore({ config: { token: null } })
 
     return (
       store
@@ -179,11 +189,11 @@ describe('Anime details action creators', () => {
         //getAnimeDetails contains the 2 fetch calls
         .then(() => {
           // return of async actions
-          expect(store.getActions()).toEqual(expectedActions);
+          expect(store.getActions()).toEqual(expectedActions)
         })
-    );
-  });
-});
+    )
+  })
+})
 ```
 
 ### Mocking multiple fetches with `fetch.mockResponses`
@@ -212,7 +222,7 @@ describe('getYear action creator', () => {
         JSON.stringify([{ name: 'shingeki', average_score: 91 }]),
         { status: 200 }
       ]
-    );
+    )
 
     const expectedActions = [
       {
@@ -233,13 +243,13 @@ describe('getYear action creator', () => {
       {
         type: 'FETCH_ANIMELIST_COMPLETE'
       }
-    ];
+    ]
     const store = mockStore({
       config: {
         token: { access_token: 'wtw45CmyEuh4P621IDVxWkgVr5QwTg3wXEc4Z7Cv' }
       },
       years: []
-    });
+    })
 
     return (
       store
@@ -247,11 +257,11 @@ describe('getYear action creator', () => {
         //This calls fetch 4 times, once for each season
         .then(() => {
           // return of async actions
-          expect(store.getActions()).toEqual(expectedActions);
+          expect(store.getActions()).toEqual(expectedActions)
         })
-    );
-  });
-});
+    )
+  })
+})
 ```
 
 ### Reset mocks between tests with `fetch.resetMocks`
@@ -359,53 +369,53 @@ describe('getYear action creator', () => {
 ```js
 // api.js
 
-import 'isomorphic-fetch';
+import 'isomorphic-fetch'
 
 export function APIRequest(who) {
   if (who === 'facebook') {
-    return fetch('https://facebook.com');
+    return fetch('https://facebook.com')
   } else if (who === 'twitter') {
-    return fetch('https://twitter.com');
+    return fetch('https://twitter.com')
   } else {
-    return fetch('https://google.com');
+    return fetch('https://google.com')
   }
 }
 ```
 
 ```js
 // api.test.js
-import { APIRequest } from './api';
+import { APIRequest } from './api'
 
 describe('testing api', () => {
   beforeEach(() => {
-    fetch.resetMocks();
-  });
+    fetch.resetMocks()
+  })
 
   it('calls google by default', () => {
-    fetch.mockResponse(JSON.stringify({ secret_data: '12345' }));
-    APIRequest();
+    fetch.mockResponse(JSON.stringify({ secret_data: '12345' }))
+    APIRequest()
 
-    expect(fetch.mock.calls.length).toEqual(1);
-    expect(fetch.mock.calls[0][0]).toEqual('https://google.com');
-  });
+    expect(fetch.mock.calls.length).toEqual(1)
+    expect(fetch.mock.calls[0][0]).toEqual('https://google.com')
+  })
 
   it('calls facebook', () => {
-    fetch.mockResponse(JSON.stringify({ secret_data: '12345' }));
-    APIRequest('facebook');
+    fetch.mockResponse(JSON.stringify({ secret_data: '12345' }))
+    APIRequest('facebook')
 
-    expect(fetch.mock.calls.length).toEqual(2);
+    expect(fetch.mock.calls.length).toEqual(2)
     expect(fetch.mock.calls[0][0]).toEqual(
       'https://facebook.com/someOtherResource'
-    );
-    expect(fetch.mock.calls[1][0]).toEqual('https://facebook.com');
-  });
+    )
+    expect(fetch.mock.calls[1][0]).toEqual('https://facebook.com')
+  })
 
   it('calls twitter', () => {
-    fetch.mockResponse(JSON.stringify({ secret_data: '12345' }));
-    APIRequest('twitter');
+    fetch.mockResponse(JSON.stringify({ secret_data: '12345' }))
+    APIRequest('twitter')
 
-    expect(fetch).toBeCalled(); // alias for expect(fetch.mock.calls.length).toEqual(1);
-    expect(fetch).toBeCalledWith('https://twitter.com'); // alias for expect(fetch.mock.calls[0][0]).toEqual();
-  });
-});
+    expect(fetch).toBeCalled() // alias for expect(fetch.mock.calls.length).toEqual(1);
+    expect(fetch).toBeCalledWith('https://twitter.com') // alias for expect(fetch.mock.calls[0][0]).toEqual();
+  })
+})
 ```
