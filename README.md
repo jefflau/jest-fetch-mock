@@ -11,7 +11,7 @@ It currently supports the mocking of the go-to isomorphic polyfill for fetch, [`
   * [Using with Create-React-App](#using-with-create-react-app)
 * [API](#api)
 * [Examples](#examples)
-  * [Simple mock](#simple-mock)
+  * [Simple mock and assert](#simple-mock-and-assert)
   * [Mocking all fetches](#mocking-all-fetches)
   * [Mocking a failed fetch](#mocking-a-failed-fetch)
   * [Mocking multiple fetches with different responses](#mocking-multiple-fetches-with-different-responses)
@@ -89,11 +89,13 @@ In most of the complicated examples below, I am testing my action creators in Re
 
 ### Simple mock and assert
 
-In this simple example I won't be using any libraries. It is a simple fetch request, in this case to google.com. We want to give it a mocked response with a `data` property and a string value of `12345`. Here we use `mockResponseOnce`, but we could also use `once`, and alias or `mockResponse`, which mocks all responses. Since we only have one fetch request here, it doesn't really matter which one we use.
+In this simple example I won't be using any libraries. It is a simple fetch request, in this case to google.com. First we setup the `beforeEach` callback to reset our mocks. This isn't strictly necessary in this example, but since we will probably be mocking fetch more than once, we need to reset it across our tests to assert on the arguments given to fetch.
+
+Once we've done that we can start to mock our response. We want to give it an objectwith a `data` property and a string value of `12345` and wrap it in `JSON.stringify` to JSONify it. Here we use `mockResponseOnce`, but we could also use `once`, which is an alias.
 
 We then call the function that we want to test with the arguments we want to test with. In the `then` callback we assert we have got the correct data back.
 
-Finally we can assert on the `.mock` state that Jest provides for us.
+Finally we can assert on the `.mock` state that Jest provides for us to test what arguments were given to fetch and how many times it was called
 
 ```js
 //api.js
