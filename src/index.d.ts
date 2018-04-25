@@ -6,11 +6,16 @@ declare module "jest-fetch-mock" {
     headers?: Object;
   }
 
-  function mockResponse(body: string, init?: MockParams): void;
-  function mockResponseOnce(body: string, init?: MockParams): void;
-  function mockResponses(responses: Array<{body: string, init?: MockParams}>): void;
-  function resetMocks(): void;
-  function mockReject(error?: Error): void;
-  function mockRejectOnce(error?: Error): void;
-  function resetMocks(): void;
+  const fn: {
+    (input?: string | Request, init?: RequestInit): Promise<Response>;
+    mockResponse(body: string, init?: MockParams): void;
+    mockResponseOnce(body: string, init?: MockParams): void;
+    mockResponses(responses: Array<{body: string, init?: MockParams}>): void;
+    resetMocks(): void;
+    mockReject(error?: Error): void;
+    mockRejectOnce(error?: Error): void;
+    resetMocks(): void;
+  }
+
+  export = fn;
 }
