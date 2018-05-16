@@ -1,4 +1,5 @@
 require('isomorphic-fetch')
+const Promise = require('promise-polyfill');
 
 const ActualResponse = Response
 
