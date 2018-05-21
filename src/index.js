@@ -1,5 +1,10 @@
 require('isomorphic-fetch')
-const Promise = require('promise-polyfill');
+
+if (!Promise) {
+  Promise = require('promise-polyfill');
+} else if (!Promise.finally) {
+  Promise.finally = require('promise-polyfill').finally;
+}
 
 const ActualResponse = Response
 
