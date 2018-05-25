@@ -121,7 +121,7 @@ describe('testing api', () => {
     fetch.mockResponseOnce(JSON.stringify({ data: '12345' }))
 
     //assert on the response
-    APIRequest2('google').then(res => {
+    APIRequest('google').then(res => {
       expect(res.data).toEqual('12345')
     })
 
