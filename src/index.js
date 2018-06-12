@@ -9,7 +9,7 @@ if (!Promise) {
 const ActualResponse = Response
 
 function ResponseWrapper(body, init) {
-  if (typeof body.constructor === 'function' && body.constructor.__isFallback) {
+  if (body && typeof body.constructor === 'function' && body.constructor.__isFallback) {
     const response = new ActualResponse(null, init)
     response.body = body
 
