@@ -71,6 +71,28 @@ If you are using [Create-React-App](https://github.com/facebookincubator/create-
 * `fetch.mockReject(error): fetch` - Mock all fetch calls, letting them fail directly
 * `fetch.mockRejectOnce(error): fetch` - Let the next fetch call fail directly
 
+### Promises
+
+Instead of passing body, it is possible to pass a promise too.
+The promise should resolve with an object containing body and init
+
+i.e:
+
+```
+fetch.mockResponse(new Promise((resolve, reject) => {
+    return callMyApi().then(res => ({body: res}))
+}))
+```
+
+The same goes for rejects:
+
+```
+fetch.mockReject(new Promise((resolve, reject) => {
+    return doMyAsyncJob().then(res => res.errorToRaise)
+}))
+```
+
+
 ### Mock utilities
 
 * `fetch.resetMocks()` - Clear previously set mocks so they do not bleed into other mocks

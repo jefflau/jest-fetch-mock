@@ -10,11 +10,11 @@ declare module "jest-fetch-mock" {
 
   interface Fetch {
     (input?: string | Request, init?: RequestInit): Promise<Response>;
-    mockResponse(body: string, init?: MockParams): Fetch;
-    mockResponseOnce(body: string, init?: MockParams): Fetch;
+    mockResponse(body: string | Promise, init?: MockParams): Fetch;
+    mockResponseOnce(body: string | Promise, init?: MockParams): Fetch;
     mockResponses(...responses : Array<[string] | [string, MockParams]>): Fetch;
-    mockReject(error?: Error): Fetch;
-    mockRejectOnce(error?: Error): Fetch;
+    mockReject(error?: Error | Promise): Fetch;
+    mockRejectOnce(error?: Error | Promise): Fetch;
     resetMocks(): void;
   }
 

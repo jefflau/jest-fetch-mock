@@ -1,14 +1,14 @@
 require('isomorphic-fetch')
 
 if (!Promise) {
-  Promise = require('promise-polyfill');
+  Promise = require('promise-polyfill')
 } else if (!Promise.finally) {
-  Promise.finally = require('promise-polyfill').finally;
+  Promise.finally = require('promise-polyfill').finally
 }
 
 const ActualResponse = Response
 
-function ResponseWrapper(body, init) {
+function ResponseWrapper (body, init) {
   if (body && typeof body.constructor === 'function' && body.constructor.__isFallback) {
     const response = new ActualResponse(null, init)
     response.body = body
@@ -28,40 +28,37 @@ function ResponseWrapper(body, init) {
   return new ActualResponse(body, init)
 }
 
+const isAPromise = obj => obj && obj.then && (typeof obj.then === 'function')
+
+function resolve (bodyOrPromise, init) {
+  return () =>
+    isAPromise(bodyOrPromise) ?
+      bodyOrPromise.then((res) => new ResponseWrapper(res.body, res.init))
+      : Promise.resolve(new ResponseWrapper(bodyOrPromise, init))
+}
+
 const fetch = jest.fn()
 fetch.Headers = Headers
 fetch.Response = ResponseWrapper
 fetch.Request = Request
-fetch.mockResponse = (body, init) => {
-  return fetch.mockImplementation(() =>
-    Promise.resolve(new ResponseWrapper(body, init))
-  )
-}
+fetch.mockResponse = (bodyOrPromise, init) => fetch.mockImplementation(resolve(bodyOrPromise, init))
 
 fetch.mockReject = error => {
   return fetch.mockImplementation(() => Promise.reject(error))
 }
 
-const mockResponseOnce = (body, init) => {
-  return fetch.mockImplementationOnce(() =>
-    Promise.resolve(new ResponseWrapper(body, init))
-  )
-}
+const mockResponseOnce = (bodyOrPromise, init) => fetch.mockImplementationOnce(resolve(bodyOrPromise, init))
 
 fetch.mockResponseOnce = mockResponseOnce
 
 fetch.once = mockResponseOnce
 
-fetch.mockRejectOnce = error => {
-  return fetch.mockImplementationOnce(() => Promise.reject(error))
+fetch.mockRejectOnce = errorOrPromise => {
+  return fetch.mockImplementationOnce(() => isAPromise(errorOrPromise) ? errorOrPromise : Promise.reject(error))
 }
 
 fetch.mockResponses = (...responses) => {
-  responses.forEach(([body, init]) => {
-    fetch.mockImplementationOnce(() =>
-      Promise.resolve(new ResponseWrapper(body, init))
-    )
-  })
+  responses.forEach(([bodyOrPromise, init]) => fetch.mockImplementationOnce(resolve(bodyOrPromise, init)))
   return fetch
 }
 
