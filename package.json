@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "types": "src/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -31,5 +31,18 @@
     "semi": false,
     "editor.formatOnSave": true,
     "singleQuote": true
+  },
+  "jest": {
+    "automock": false,
+    "setupFiles": [
+      "./setupJest.js"
+    ]
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-jest": "^23.4.2",
+    "babel-preset-env": "^1.7.0",
+    "jest": "^23.5.0",
+    "regenerator-runtime": "^0.12.1"
   }
 }
