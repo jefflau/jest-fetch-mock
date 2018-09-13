@@ -23,9 +23,11 @@
   },
   "homepage": "https://github.com/jefflau/jest-fetch-mock#readme",
   "dependencies": {
-    "@types/jest": "^23.0.0",
     "isomorphic-fetch": "^2.2.1",
     "promise-polyfill": "^7.1.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^23.0.0"
   },
   "prettier": {
     "semi": false,
