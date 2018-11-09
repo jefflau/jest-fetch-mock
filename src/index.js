@@ -1,8 +1,16 @@
+<<<<<<< HEAD
 const crossFetch = require('cross-fetch')
 global.fetch = crossFetch
 global.Response = crossFetch.Response
 global.Headers = crossFetch.Headers
 global.Request = crossFetch.Request
+=======
+const crossFetch = require("cross-fetch");
+global.fetch = crossFetch;
+global.Response = crossFetch.Response;
+global.Headers = crossFetch.Headers;
+global.Request = crossFetch.Request;
+>>>>>>> master
 
 if (!Promise) {
   Promise = require('promise-polyfill')
