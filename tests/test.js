@@ -1,114 +1,215 @@
-import { APIRequest, APIRequest2 } from './api'
+import { APIRequest, APIRequest2, request } from './api'
 
-describe('testing chaining', () => {
+// describe('testing chaining', () => {
+//   beforeEach(() => {
+//     fetch.resetMocks()
+//   })
+
+//   it('mocking multiple responses', () => {
+//     const mock = fetch
+//       .once(JSON.stringify({ name: 'naruto', average_score: 79 }))
+//       .once(JSON.stringify({ name: 'bleach', average_score: 68 }))
+//     // .mockResponseOnce(
+//     //   JSON.stringify({ secret_data: '12345' }, { status: 200 })
+//     // )
+//     // .mockResponseOnce(
+//     //   JSON.stringify({ secret_data: '67891' }, { status: 200 })
+//     // );
+
+//     APIRequest('facebook').then(res => {
+//       console.log(res)
+//     })
+
+//     console.log(mock)
+//   })
+// })
+
+describe('testing mockResponse and alias once', () => {
   beforeEach(() => {
     fetch.resetMocks()
   })
-
-  it('mocking multiple responses', () => {
-    const mock = fetch
-      .once(JSON.stringify({ name: 'naruto', average_score: 79 }))
-      .once(JSON.stringify({ name: 'bleach', average_score: 68 }))
-    // .mockResponseOnce(
-    //   JSON.stringify({ secret_data: '12345' }, { status: 200 })
-    // )
-    // .mockResponseOnce(
-    //   JSON.stringify({ secret_data: '67891' }, { status: 200 })
-    // );
-
-    APIRequest('facebook').then(res => {
-      console.log(res)
-    })
-
-    console.log(mock)
-  })
-})
-
-describe('testing response', () => {
-  beforeEach(() => {
-    fetch.resetMocks()
-  })
-
-  it('mocking multiple responses', () => {
-    const mock = fetch.mockResponses(
-      [JSON.stringify({ name: 'naruto', average_score: 79 })],
-      [JSON.stringify({ name: 'bleach', average_score: 68 })]
+  it('mocks a response', async () => {
+    fetch.mockResponseOnce(
+      JSON.stringify({ secret_data: 'abcde' }, { status: 200 })
     )
-    // .mockResponseOnce(
-    //   JSON.stringify({ secret_data: '12345' }, { status: 200 })
-    // )
-    // .mockResponseOnce(
-    //   JSON.stringify({ secret_data: '67891' }, { status: 200 })
-    // );
 
-    APIRequest('facebook').then(res => {
-      console.log(res)
-    })
-  })
-})
+    const response = await APIRequest('google')
 
-describe('testing api', () => {
-  beforeEach(() => {
-    fetch.resetMocks()
-  })
-
-  it('calls google by default', () => {
-    const mock = fetch.mockResponse(JSON.stringify({ secret_data: '12345' }))
-    APIRequest()
-
+    expect(response).toEqual({ secret_data: 'abcde' })
     expect(fetch.mock.calls.length).toEqual(1)
     expect(fetch.mock.calls[0][0]).toEqual('https://google.com')
   })
 
-  it('calls facebook', () => {
-    fetch.mockResponse(JSON.stringify({ secret_data: '12345' }))
-    APIRequest('facebook')
+  it('mocks a response with chaining', async () => {
+    fetch
+      .mockResponseOnce(
+        JSON.stringify({ secret_data: '12345' }, { status: 200 })
+      )
+      .mockResponseOnce(
+        JSON.stringify({ secret_data: '67891' }, { status: 200 })
+      )
+
+    const response = await APIRequest('facebook')
+
+    expect(response).toEqual([
+      { secret_data: '12345' },
+      { secret_data: '67891' }
+    ])
 
     expect(fetch.mock.calls.length).toEqual(2)
+
     expect(fetch.mock.calls[0][0]).toEqual(
       'https://facebook.com/someOtherResource'
     )
     expect(fetch.mock.calls[1][0]).toEqual('https://facebook.com')
   })
 
-  it('calls twitter', () => {
-    fetch.mockResponse(JSON.stringify({ secret_data: '12345' }))
-    APIRequest('twitter')
+  it('mocks a response with alis .once', async () => {
+    fetch.mockResponseOnce(
+      JSON.stringify({ secret_data: 'abcde' }, { status: 200 })
+    )
 
-    expect(fetch).toBeCalled() // alias for expect(fetch.mock.calls.length).toEqual(1);
-    expect(fetch).toBeCalledWith('https://twitter.com') // alias for expect(fetch.mock.calls[0][0]).toEqual();
-  })
-})
+    const response = await APIRequest('google')
 
-describe('testing api', () => {
-  beforeEach(() => {
-    fetch.resetMocks()
-  })
-
-  it('calls google and returns data to me', () => {
-    fetch.mockResponseOnce(JSON.stringify({ data: '12345' }))
-
-    //assert on the response
-    APIRequest2('google').then(res => {
-      expect(res.data).toEqual('12345')
-    })
-
-    //assert on the times called and arguments given to fetch
+    expect(response).toEqual({ secret_data: 'abcde' })
     expect(fetch.mock.calls.length).toEqual(1)
     expect(fetch.mock.calls[0][0]).toEqual('https://google.com')
   })
 
-  it('mocking multiple responses', () => {
-    const mock = fetch.mockRejectOnce(new Error({ message: 'fake error' }))
-    return APIRequest('facebook')
-      .then(res => {
-        console.log(res)
-        console.log('not in error')
+  it('mocks a response with chaining with alias .once', async () => {
+    fetch
+      .once(JSON.stringify({ secret_data: '12345' }, { status: 200 }))
+      .once(JSON.stringify({ secret_data: '67891' }, { status: 200 }))
+
+    const response = await APIRequest('facebook')
+
+    expect(response).toEqual([
+      { secret_data: '12345' },
+      { secret_data: '67891' }
+    ])
+
+    expect(fetch.mock.calls.length).toEqual(2)
+
+    expect(fetch.mock.calls[0][0]).toEqual(
+      'https://facebook.com/someOtherResource'
+    )
+    expect(fetch.mock.calls[1][0]).toEqual('https://facebook.com')
+  })
+})
+
+describe('testing mockResponses', () => {
+  beforeEach(() => {
+    fetch.resetMocks()
+  })
+  it('mocks multiple responses', async () => {
+    fetch.mockResponses(
+      [JSON.stringify({ name: 'naruto', average_score: 79 })],
+      [JSON.stringify({ name: 'bleach', average_score: 68 })]
+    )
+
+    const response = await APIRequest('facebook')
+    expect(response).toEqual([
+      { name: 'naruto', average_score: 79 },
+      { name: 'bleach', average_score: 68 }
+    ])
+    expect(fetch.mock.calls.length).toEqual(2)
+
+    expect(fetch.mock.calls[0][0]).toEqual(
+      'https://facebook.com/someOtherResource'
+    )
+    expect(fetch.mock.calls[1][0]).toEqual('https://facebook.com')
+  })
+})
+
+describe('Mocking rejects', () => {
+  beforeEach(() => {
+    fetch.resetMocks()
+  })
+
+  it('mocking rejects', async () => {
+    fetch.mockRejectOnce('fake error')
+    try {
+      await APIRequest2('google')
+    } catch (e) {
+      expect(e).toEqual('fake error')
+    }
+  })
+})
+
+describe('request', () => {
+  beforeEach(() => {
+    fetch.resetMocks()
+  })
+
+  it('returns object when response is json', done => {
+    const mockResponse = {
+      results: [{ gender: 'neutral' }],
+      info: { seed: '0123456789123456', results: 1, page: 1, version: '1.2' }
+    }
+    fetch.mockResponseOnce(JSON.stringify(mockResponse), {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+
+    request()
+      .then(response => {
+        expect(fetch).toHaveBeenCalledWith('https://randomuser.me/api', {})
+        expect(response).toEqual(mockResponse)
+        done()
       })
-      .catch(err => {
-        console.dir(err)
-        expect(err.message).toEqual('fake error')
-        console.log(err)
+      .catch(done.fail)
+  })
+
+  it('returns text when response is text', done => {
+    fetch.mockResponseOnce('ok')
+
+    request()
+      .then(response => {
+        expect(fetch).toHaveBeenCalledWith('https://randomuser.me/api', {})
+        expect(response).toEqual('ok')
+        done()
+      })
+      .catch(done.fail)
+  })
+
+  it('returns blob when response is text/csv', async () => {
+    const contentType = 'text/csv; charset=utf-8'
+    fetch.mockResponseOnce('csv data', {
+      headers: {
+        'Content-Type': contentType
+      }
+    })
+
+    try {
+      const response = await request()
+      expect(response.type).toBe(contentType)
+    } catch (e) {
+      console.log(e)
+    }
+
+    expect(fetch).toHaveBeenCalledWith('https://randomuser.me/api', {})
+    // .then(response => {
+    //   expect(fetch).toHaveBeenCalledWith('https://randomuser.me/api', {})
+    //   // Blob responses have a type.
+    //   expect(response.type).toBe(contentType)
+    //   done()
+    // })
+    // .catch(done.fail)
+  })
+
+  it('rejects with error data', done => {
+    const errorData = {
+      error:
+        'Uh oh, something has gone wrong. Please tweet us @randomapi about the issue. Thank you.'
+    }
+    fetch.mockRejectOnce(JSON.stringify(errorData))
+
+    request()
+      .then(done.fail)
+      .catch(error => {
+        expect(error.message).toBe(errorData.error)
+        done()
       })
   })
 })
