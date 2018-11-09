@@ -1,29 +1,5 @@
 import { APIRequest, APIRequest2, request } from './api'
 
-// describe('testing chaining', () => {
-//   beforeEach(() => {
-//     fetch.resetMocks()
-//   })
-
-//   it('mocking multiple responses', () => {
-//     const mock = fetch
-//       .once(JSON.stringify({ name: 'naruto', average_score: 79 }))
-//       .once(JSON.stringify({ name: 'bleach', average_score: 68 }))
-//     // .mockResponseOnce(
-//     //   JSON.stringify({ secret_data: '12345' }, { status: 200 })
-//     // )
-//     // .mockResponseOnce(
-//     //   JSON.stringify({ secret_data: '67891' }, { status: 200 })
-//     // );
-
-//     APIRequest('facebook').then(res => {
-//       console.log(res)
-//     })
-
-//     console.log(mock)
-//   })
-// })
-
 describe('testing mockResponse and alias once', () => {
   beforeEach(() => {
     fetch.resetMocks()
@@ -64,7 +40,7 @@ describe('testing mockResponse and alias once', () => {
     expect(fetch.mock.calls[1][0]).toEqual('https://facebook.com')
   })
 
-  it('mocks a response with alis .once', async () => {
+  it('mocks a response with alias .once', async () => {
     fetch.mockResponseOnce(
       JSON.stringify({ secret_data: 'abcde' }, { status: 200 })
     )
@@ -189,13 +165,6 @@ describe('request', () => {
     }
 
     expect(fetch).toHaveBeenCalledWith('https://randomuser.me/api', {})
-    // .then(response => {
-    //   expect(fetch).toHaveBeenCalledWith('https://randomuser.me/api', {})
-    //   // Blob responses have a type.
-    //   expect(response.type).toBe(contentType)
-    //   done()
-    // })
-    // .catch(done.fail)
   })
 
   it('rejects with error data', done => {
