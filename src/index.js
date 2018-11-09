@@ -1,4 +1,8 @@
-require('isomorphic-fetch')
+const crossFetch = require("cross-fetch");
+global.fetch = crossFetch;
+global.Response = crossFetch.Response;
+global.Headers = crossFetch.Headers;
+global.Request = crossFetch.Request;
 
 if (!Promise) {
   Promise = require('promise-polyfill');
