@@ -1,15 +1,23 @@
-require('isomorphic-fetch')
+const crossFetch = require('cross-fetch')
+global.fetch = crossFetch
+global.Response = crossFetch.Response
+global.Headers = crossFetch.Headers
+global.Request = crossFetch.Request
 
 if (!Promise) {
-  Promise = require('promise-polyfill');
+  Promise = require('promise-polyfill')
 } else if (!Promise.finally) {
-  Promise.finally = require('promise-polyfill').finally;
+  Promise.finally = require('promise-polyfill').finally
 }
 
 const ActualResponse = Response
 
 function ResponseWrapper(body, init) {
-  if (body && typeof body.constructor === 'function' && body.constructor.__isFallback) {
+  if (
+    body &&
+    typeof body.constructor === 'function' &&
+    body.constructor.__isFallback
+  ) {
     const response = new ActualResponse(null, init)
     response.body = body
 
