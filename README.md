@@ -2,7 +2,7 @@
 
 Fetch is the new way to do HTTP requests in the browser, and it can be used in other environments such as React Native. Jest Fetch Mock allows you to easily mock your `fetch` calls and return the response you need to fake the HTTP requests. It's easy to setup and you don't need a library like `nock` to get going and it uses Jest's built-in support for mocking under the surface. This means that any of the `jest.fn()` methods are also available. For more information on the jest mock API, check their docs [here](https://facebook.github.io/jest/docs/en/mock-functions.html)
 
-It currently supports the mocking of the go-to isomorphic polyfill for fetch, [`isomorphic-fetch`](https://github.com/matthew-andrews/isomorphic-fetch), so it supports Node.js and any browser-like runtime.
+It currently supports the mocking with the [`cross-fetch`](https://www.npmjs.com/package/cross-fetch) polyfill, so it supports Node.js and any browser-like runtime.
 
 ## Contents
 
@@ -418,7 +418,7 @@ describe('getYear action creator', () => {
 ```js
 // api.js
 
-import 'isomorphic-fetch'
+import 'cross-fetch'
 
 export function APIRequest(who) {
   if (who === 'facebook') {
