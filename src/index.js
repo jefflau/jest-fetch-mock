@@ -30,24 +30,21 @@ function ResponseWrapper (body, init) {
 
 const isAPromise = obj => obj && obj.then && (typeof obj.then === 'function')
 
-function resolve (bodyOrPromise, init) {
-  return () =>
-    isAPromise(bodyOrPromise) ?
-      bodyOrPromise.then((res) => new ResponseWrapper(res.body, res.init))
-      : Promise.resolve(new ResponseWrapper(bodyOrPromise, init))
-}
+const resolve = (bodyOrFunction, init) => () => isAPromise(bodyOrFunction) ?
+      bodyOrFunction.then((res) => new ResponseWrapper(res.body, res.init))
+      : Promise.resolve(new ResponseWrapper(bodyOrFunction, init))
 
 const fetch = jest.fn()
 fetch.Headers = Headers
 fetch.Response = ResponseWrapper
 fetch.Request = Request
-fetch.mockResponse = (bodyOrPromise, init) => fetch.mockImplementation(resolve(bodyOrPromise, init))
+fetch.mockResponse = (bodyOrFunction, init) => fetch.mockImplementation(resolve(bodyOrFunction, init))
 
 fetch.mockReject = error => {
   return fetch.mockImplementation(() => Promise.reject(error))
 }
 
-const mockResponseOnce = (bodyOrPromise, init) => fetch.mockImplementationOnce(resolve(bodyOrPromise, init))
+const mockResponseOnce = (bodyOrFunction, init) => fetch.mockImplementationOnce(resolve(bodyOrFunction, init))
 
 fetch.mockResponseOnce = mockResponseOnce
 
@@ -58,7 +55,7 @@ fetch.mockRejectOnce = errorOrPromise => {
 }
 
 fetch.mockResponses = (...responses) => {
-  responses.forEach(([bodyOrPromise, init]) => fetch.mockImplementationOnce(resolve(bodyOrPromise, init)))
+  responses.forEach(([bodyOrFunction, init]) => fetch.mockImplementationOnce(resolve(bodyOrFunction, init)))
   return fetch
 }
 

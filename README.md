@@ -63,18 +63,18 @@ If you are using [Create-React-App](https://github.com/facebookincubator/create-
 
 ### Mock Responses
 
-* `fetch.mockResponse(body, init): fetch` - Mock all fetch calls
-* `fetch.mockResponseOnce(body, init): fetch` - Mock each fetch call independently
-* `fetch.once(body, init): fetch` - Alias for mockResponseOnce
+* `fetch.mockResponse(bodyOrFunction, init): fetch` - Mock all fetch calls
+* `fetch.mockResponseOnce(bodyOrFunction, init): fetch` - Mock each fetch call independently
+* `fetch.once(bodyOrFunction, init): fetch` - Alias for mockResponseOnce
 * `fetch.mockResponses(...responses): fetch` - Mock multiple fetch calls independently
-  * Each argument is an array taking `[body, init]`
+  * Each argument is an array taking `[bodyOrFunction, init]`
 * `fetch.mockReject(error): fetch` - Mock all fetch calls, letting them fail directly
 * `fetch.mockRejectOnce(error): fetch` - Let the next fetch call fail directly
 
 ### Promises
 
-Instead of passing body, it is possible to pass a promise too.
-The promise should resolve with an object containing body and init
+Instead of passing body, it is possible to pass a function that returns a promise too.
+The promise should resolve with an object containing body and init props
 
 i.e:
 
