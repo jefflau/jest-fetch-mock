@@ -81,17 +81,13 @@ The promise should resolve with an object containing body and init props
 i.e:
 
 ```
-fetch.mockResponse(new Promise((resolve, reject) => {
-    return callMyApi().then(res => ({body: res}))
-}))
+fetch.mockResponse(() => callMyApi().then(res => ({body: res}))
 ```
 
 The same goes for rejects:
 
 ```
-fetch.mockReject(new Promise((resolve, reject) => {
-    return doMyAsyncJob().then(res => res.errorToRaise)
-}))
+fetch.mockReject(() => doMyAsyncJob().then(res => res.errorToRaise))
 ```
 
 ### Mock utilities
