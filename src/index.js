@@ -42,9 +42,9 @@ const normalizeResponse = (bodyOrFunction, init) => () => isFn(bodyOrFunction) ?
     bodyOrFunction().then(({body, init}) => new ResponseWrapper(body, init)) :
     Promise.resolve(new ResponseWrapper(bodyOrFunction, init))
 
-const normalizeError = errorOrFunction => () => isFn(errorOrFunction) ?
-    errorOrFunction :
-    () => Promise.reject(errorOrFunction)
+const normalizeError = errorOrFunction =>  isFn(errorOrFunction) ?
+  errorOrFunction :
+  () => Promise.reject(errorOrFunction)
 
 const fetch = jest.fn()
 fetch.Headers = Headers

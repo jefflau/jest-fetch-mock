@@ -87,7 +87,7 @@ fetch.mockResponse(() => callMyApi().then(res => ({body: res}))
 The same goes for rejects:
 
 ```
-fetch.mockReject(() => doMyAsyncJob().then(res => res.errorToRaise))
+fetch.mockReject(() => doMyAsyncJob().then(res => Promise.reject(res.errorToRaise)))
 ```
 
 ### Mock utilities

@@ -181,4 +181,30 @@ describe('request', () => {
         done()
       })
   })
+
+  it('resolves with function', done => {
+      fetch.mockResponseOnce(() => Promise.resolve({body: 'ok'}))
+
+    request()
+      .then(response => {
+          expect(response).toEqual('ok')
+          done()
+      })
+      .catch(done.fail)
+  })
+
+  it('rejects with function', done => {
+    const errorData = {
+      error:
+        'Uh oh, something has gone wrong. Please tweet us @randomapi about the issue. Thank you.'
+    }
+    fetch.mockRejectOnce(() => Promise.reject(JSON.stringify(errorData)))
+
+    request()
+      .then(done.fail)
+      .catch(error => {
+        expect(error.message).toBe(errorData.error)
+        done()
+      })
+  })
 })
