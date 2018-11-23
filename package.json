@@ -1,11 +1,11 @@
 {
   "name": "jest-fetch-mock",
-  "version": "1.6.4",
+  "version": "1.7.5",
   "description": "fetch mock for jest",
   "main": "src/index.js",
   "types": "src/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -23,13 +23,25 @@
   },
   "homepage": "https://github.com/jefflau/jest-fetch-mock#readme",
   "dependencies": {
-    "@types/jest": "^23.0.0",
-    "isomorphic-fetch": "^2.2.1",
+    "cross-fetch": "^2.2.2",
     "promise-polyfill": "^7.1.1"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.3",
+    "babel-jest": "^23.4.2",
+    "babel-preset-env": "^1.7.0",
+    "jest": "^23.5.0",
+    "regenerator-runtime": "^0.12.1"
   },
   "prettier": {
     "semi": false,
     "editor.formatOnSave": true,
     "singleQuote": true
+  },
+  "jest": {
+    "automock": false,
+    "setupFiles": [
+      "./setupJest.js"
+    ]
   }
 }
