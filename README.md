@@ -65,13 +65,30 @@ If you are using [Create-React-App](https://github.com/facebookincubator/create-
 
 ### Mock Responses
 
-- `fetch.mockResponse(body, init): fetch` - Mock all fetch calls
-- `fetch.mockResponseOnce(body, init): fetch` - Mock each fetch call independently
-- `fetch.once(body, init): fetch` - Alias for mockResponseOnce
+- `fetch.mockResponse(bodyOrFunction, init): fetch` - Mock all fetch calls
+- `fetch.mockResponseOnce(bodyOrFunction, init): fetch` - Mock each fetch call independently
+- `fetch.once(bodyOrFunction, init): fetch` - Alias for mockResponseOnce
 - `fetch.mockResponses(...responses): fetch` - Mock multiple fetch calls independently
-  - Each argument is an array taking `[body, init]`
-- `fetch.mockReject(error): fetch` - Mock all fetch calls, letting them fail directly
-- `fetch.mockRejectOnce(error): fetch` - Let the next fetch call fail directly
+  - Each argument is an array taking `[bodyOrFunction, init]`
+- `fetch.mockReject(errorOrFunction): fetch` - Mock all fetch calls, letting them fail directly
+- `fetch.mockRejectOnce(errorOrFunction): fetch` - Let the next fetch call fail directly
+
+### Functions
+
+Instead of passing body, it is also possible to pass a function that returns a promise.
+The promise should resolve with an object containing body and init props
+
+i.e:
+
+```
+fetch.mockResponse(() => callMyApi().then(res => ({body: res}))
+```
+
+The same goes for rejects:
+
+```
+fetch.mockReject(() => doMyAsyncJob().then(res => Promise.reject(res.errorToRaise)))
+```
 
 ### Mock utilities
 
