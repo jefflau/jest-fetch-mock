@@ -1,6 +1,6 @@
 {
   "name": "jest-fetch-mock",
-  "version": "1.7.5",
+  "version": "2.0.0",
   "description": "fetch mock for jest",
   "main": "src/index.js",
   "types": "src/index.d.ts",
