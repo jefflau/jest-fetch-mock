@@ -181,4 +181,60 @@ describe('request', () => {
         done()
       })
   })
+
+  it('resolves with function', async () => {
+    fetch.mockResponseOnce(() => Promise.resolve({ body: 'ok' }))
+
+    try {
+      const response = await request()
+      expect(response).toEqual('ok')
+    } catch (e) {
+      throw e
+    }
+  })
+
+  it('resolves with function and timeout', async () => {
+    fetch.mockResponseOnce(
+      () => new Promise(resolve => setTimeout(() => resolve({ body: 'ok' }))),
+      100
+    )
+    try {
+      const response = await request()
+      expect(response).toEqual('ok')
+    } catch (e) {
+      throw e
+    }
+  })
+
+  it('rejects with function', async () => {
+    const errorData = {
+      error:
+        'Uh oh, something has gone wrong. Please tweet us @randomapi about the issue. Thank you.'
+    }
+    fetch.mockRejectOnce(() => Promise.reject(JSON.stringify(errorData)))
+    try {
+      await request()
+    } catch (error) {
+      expect(error.message).toBe(errorData.error)
+    }
+  })
+
+  it('rejects with function and timeout', async () => {
+    const errorData = {
+      error:
+        'Uh oh, something has gone wrong. Please tweet us @randomapi about the issue. Thank you.'
+    }
+    fetch.mockRejectOnce(
+      () =>
+        new Promise((_, reject) =>
+          setTimeout(() => reject(JSON.stringify(errorData)))
+        ),
+      100
+    )
+    try {
+      await request()
+    } catch (error) {
+      expect(error.message).toBe(errorData.error)
+    }
+  })
 })
