@@ -18,6 +18,7 @@ It currently supports the mocking with the [`cross-fetch`](https://www.npmjs.com
   - [Mocking multiple fetches with `fetch.mockResponses`](#mocking-multiple-fetches-with-fetchmockresponses)
   - [Reset mocks between tests with `fetch.resetMocks`](#reset-mocks-between-tests-with-fetchresetmocks)
   - [Using `fetch.mock` to inspect the mock state of each fetch call](#using-fetchmock-to-inspect-the-mock-state-of-each-fetch-call)
+  - [Using functions to mock slow servers](#using-functions-mock-slow-servers)
 
 ## Usage
 
