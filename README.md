@@ -492,24 +492,8 @@ describe('testing api', () => {
 By default you will want to have your fetch mock return immediately. However if you have some custom logic that needs to tests for slower servers, you can do this by passing it a function and returning a promise when your function resolves
 
 ```js
-// api.js
-
-import 'cross-fetch'
-
-export function APIRequest(who) {
-  if (who === 'facebook') {
-    return fetch('https://facebook.com')
-  } else if (who === 'twitter') {
-    return fetch('https://twitter.com')
-  } else {
-    return fetch('https://google.com')
-  }
-}
-```
-
-```js
 // api.test.js
-import { APIRequest } from './api'
+import { request } from './api'
 
 describe('testing timeouts', () => {
   it('resolves with function and timeout', async () => {
