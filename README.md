@@ -37,6 +37,22 @@ Create a `setupJest` file to setup the mock or add this to an existing `setupFil
 global.fetch = require('jest-fetch-mock')
 ```
 
+If you're using TypeScript, then you can create a `setupJest.ts` file and create a custom interface to replace Node's default Global interface:
+
+```
+import * as fetchMock from 'jest-fetch-mock';
+import Global = NodeJS.Global;
+
+type JestFetchMock = typeof fetchMock;
+
+interface CustomGlobal extends Global {
+    fetch?: JestFetchMock
+}
+
+const customGlobal: CustomGlobal = global;
+customGlobal.fetch = fetchMock;
+```
+
 Add the setupFile to your jest config in `package.json`:
 
 ```JSON
@@ -47,6 +63,10 @@ Add the setupFile to your jest config in `package.json`:
   ]
 }
 ```
+
+### Using with TypeScript
+
+Make sure to import fetch in your tests using `import fetch from "jest-fetch-mock";`.
 
 ### Using with Create-React-App
 
