@@ -48,6 +48,37 @@ Add the setupFile to your jest config in `package.json`:
 }
 ```
 
+### TypeScript guide
+
+If you are using TypeScript, then you can follow the instructions below instead.
+
+```
+$ npm install --save-dev jest-fetch-mock
+```
+
+Create a `setupJest.ts` file to setup the mock :
+
+```ts
+import {GlobalWithFetchMock} from "jest-fetch-mock";
+
+const customGlobal: GlobalWithFetchMock = global as GlobalWithFetchMock;
+customGlobal.fetch = require('jest-fetch-mock');
+customGlobal.fetchMock = customGlobal.fetch;
+```
+
+Add the setupFile to your jest config in `package.json`:
+
+```JSON
+"jest": {
+  "automock": false,
+  "setupFiles": [
+    "./setupJest.ts"
+  ]
+}
+```
+
+With this done, you'll have `fetch` and `fetchMock` available on the global scope. Fetch will be used as usual by your code and you'll use `fetchMock` in your tests.
+
 ### Using with Create-React-App
 
 If you are using [Create-React-App](https://github.com/facebookincubator/create-react-app) (CRA), the code for `setupTest.js` above should be placed into `src/setupTests.js` in the root of your project. CRA automatically uses this filename by convention in the Jest configuration it generates. Similarly, changing to your `package.json` is not required as CRA handles this when generating your Jest configuration.
