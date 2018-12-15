@@ -3,9 +3,11 @@
   "version": "2.0.1",
   "description": "fetch mock for jest",
   "main": "src/index.js",
-  "types": "src/index.d.ts",
+  "types": "types",
   "scripts": {
-    "test": "jest"
+    "test": "jest && npm run tsc && npm run dtslint",
+    "dtslint": "dtslint types",
+    "tsc": "tsc"
   },
   "repository": {
     "type": "git",
@@ -27,11 +29,15 @@
     "promise-polyfill": "^7.1.1"
   },
   "devDependencies": {
+    "@types/jest": "^23.3.10",
+    "@types/node": "^10.12.10",
     "babel-core": "^6.26.3",
     "babel-jest": "^23.4.2",
     "babel-preset-env": "^1.7.0",
+    "dtslint": "^0.3.0",
     "jest": "^23.5.0",
-    "regenerator-runtime": "^0.12.1"
+    "regenerator-runtime": "^0.12.1",
+    "typescript": "^3.2.1"
   },
   "prettier": {
     "semi": false,
