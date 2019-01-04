@@ -78,7 +78,7 @@ const matchedResponses = (responses) => {
   responses.forEach(([pattern, bodyOrFunction, init]) => {
     responder.set(pattern, () => respond(bodyOrFunction, init))
   })
-  // responder is now be a Map of /pattern/: fn() pairs
+  // responder is now a Map of /pattern/: fn() pairs
   return responder
 }
 
