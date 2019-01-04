@@ -38,9 +38,11 @@ function ResponseWrapper(body, init) {
 
 const isFn = unknown => typeof unknown === 'function'
 
-const normalizeResponse = (bodyOrFunction, init) => () => isFn(bodyOrFunction) ?
+const respond = (bodyOrFunction, init) => isFn(bodyOrFunction) ?
     bodyOrFunction().then(({body, init}) => new ResponseWrapper(body, init)) :
     Promise.resolve(new ResponseWrapper(bodyOrFunction, init))
+
+const normalizeResponse = (bodyOrFunction, init) => () => respond(bodyOrFunction, init)
 
 const normalizeError = errorOrFunction =>  isFn(errorOrFunction) ?
   errorOrFunction :
@@ -69,6 +71,24 @@ fetch.mockResponses = (...responses) => {
 
 fetch.resetMocks = () => {
   fetch.mockReset()
+}
+
+const matchedResponses = (responses) => {
+  let responder = new Map
+  responses.forEach(([pattern, bodyOrFunction, init]) => {
+    responder.set(pattern, () => respond(bodyOrFunction, init))
+  })
+  // responder is now be a Map of /pattern/: fn() pairs
+  return responder
+}
+
+fetch.mockMatchingResponses = (...responses) => {
+  const responder = matchedResponses(responses)
+  const patterns = Array.from(responder.keys())
+  return fetch.mockImplementation((uri) => {
+    const match = patterns.find((pattern) => pattern.test(uri))
+    return match ? responder.get(match)() : respond(JSON.stringify(''))
+  })
 }
 
 // Default mock is just a empty string.

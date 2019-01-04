@@ -22,6 +22,10 @@ export function APIRequest2(who) {
   }
 }
 
+export function customRequest(uri) {
+  return fetch(uri).then(res => res.json())
+}
+
 export function request() {
   return fetch('https://randomuser.me/api', {})
     .then(response => {

@@ -1,4 +1,4 @@
-import { APIRequest, APIRequest2, request } from './api'
+import { APIRequest, APIRequest2, customRequest, request } from './api'
 
 describe('testing mockResponse and alias once', () => {
   beforeEach(() => {
@@ -94,6 +94,34 @@ describe('testing mockResponses', () => {
       'https://facebook.com/someOtherResource'
     )
     expect(fetch.mock.calls[1][0]).toEqual('https://facebook.com')
+  })
+})
+
+describe('testing mockMatchingResponses', () => {
+  beforeEach(() => {
+    fetch.resetMocks()
+    fetch.mockMatchingResponses(
+      [/apple/, JSON.stringify({ name: 'apple' })],
+      [/twitter/, JSON.stringify({ name: 'twitter' })]
+    )
+  })
+
+  it('responds with bodyOrFunction that matches fetch uri (1 of 2)', async () => {
+    const appleResponse = await customRequest('http://apple.com')
+    expect(appleResponse).toEqual({ name: 'apple' })
+    expect(fetch.mock.calls.length).toEqual(1)
+  })
+
+  it('responds with bodyOrFunction that matches fetch uri (2 of 2)', async () => {
+    const twitterResponse = await customRequest('mobile.twitter.com')
+    expect(twitterResponse).toEqual({ name: 'twitter' })
+    expect(fetch.mock.calls.length).toEqual(1)
+  })
+
+  it('returns a default response if there is no match on uri', async () => {
+    const otherResponse = await customRequest('this.wont.work.com')
+    expect(otherResponse).toEqual('')
+    expect(fetch.mock.calls.length).toEqual(1)
   })
 })
 
@@ -238,3 +266,4 @@ describe('request', () => {
     }
   })
 })
+
