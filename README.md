@@ -51,9 +51,8 @@ Add the setupFile to your jest config in `package.json`:
 ### TypeScript guide
 
 If you are using TypeScript, then you can follow the instructions below instead.
-
 ```
-$ npm install --save-dev jest-fetch-mock
+$ npm install --save-dev jest-fetch-mock @types/node
 ```
 
 Create a `setupJest.ts` file to setup the mock :
