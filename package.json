@@ -29,13 +29,13 @@
     "promise-polyfill": "^7.1.1"
   },
   "devDependencies": {
-    "@types/jest": "^24.0.0",
+    "@types/jest": "^23.3.14",
     "@types/node": "^10.12.10",
     "babel-core": "^6.26.3",
     "babel-jest": "^23.4.2",
     "babel-preset-env": "^1.7.0",
     "dtslint": "^0.3.0",
-    "jest": "^24.0.0",
+    "jest": "^23.5.0",
     "regenerator-runtime": "^0.12.1",
     "typescript": "^3.2.1"
   },
