@@ -97,6 +97,44 @@ describe('testing mockResponses', () => {
   })
 })
 
+describe('Mocking aborts',() => {
+
+  beforeEach(() => {
+    fetch.resetMocks()
+  })
+
+  it('throws an AbortError',() => {
+    fetch.mockAbort();
+    expect(() => fetch('/')).toThrow();
+  })
+
+  it('throws when passed an aborted abort signal',() => {
+    const c = new AbortController();
+    c.abort();
+    fetch.mockResponse('',{signal:c.signal});
+    expect(() => fetch('/')).toThrow();
+  })
+
+  it('throws when aborted before resolved',async () => {
+    const c = new AbortController();
+    fetch.mockResponse(() => {
+      return new Promise(res => {
+        setTimeout(() => {
+          res({
+            body:'some body',
+            init:{signal:c.signal}
+          })
+        },100);
+      })
+    })
+
+    const res = fetch('/');
+    setTimeout(() => c.abort(),50);
+    await expect(res).rejects.toBeTruthy();
+  })
+
+})
+
 describe('Mocking rejects', () => {
   beforeEach(() => {
     fetch.resetMocks()

@@ -10,6 +10,8 @@ if (!Promise) {
   Promise.finally = require('promise-polyfill').finally
 }
 
+const abort = () => { throw new Error('Aborted') }
+
 const ActualResponse = Response
 
 function ResponseWrapper(body, init) {
@@ -33,6 +35,10 @@ function ResponseWrapper(body, init) {
     return response
   }
 
+  if(init && init.signal) {
+    init.signal.aborted ? abort() : init.signal.addEventListener('abort',abort);
+  }
+
   return new ActualResponse(body, init)
 }
 
@@ -51,6 +57,8 @@ fetch.Headers = Headers
 fetch.Response = ResponseWrapper
 fetch.Request = Request
 fetch.mockResponse = (bodyOrFunction, init) => fetch.mockImplementation(normalizeResponse(bodyOrFunction, init))
+
+fetch.mockAbort = () => fetch.mockImplementation(normalizeError(abort));
 
 fetch.mockReject = errorOrFunction => fetch.mockImplementation(normalizeError(errorOrFunction))
 
