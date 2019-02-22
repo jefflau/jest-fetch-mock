@@ -77,6 +77,8 @@ Add the setupFile to your jest config in `package.json`:
 }
 ```
 
+> Note: If the `"files"` or `"include"` properties are set in the `tsconfig.json` file, then the `setupJest.ts` file must be included. Otherwise, the TypeScript compiler will fail to find `fetchMock`.
+
 With this done, you'll have `fetch` and `fetchMock` available on the global scope. Fetch will be used as usual by your code and you'll use `fetchMock` in your tests.
 
 ### Using with Create-React-App
