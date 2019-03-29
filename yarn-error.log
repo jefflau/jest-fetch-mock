@@ -24,11 +24,7 @@ Trace:
 npm manifest: 
   {
     "name": "jest-fetch-mock",
-  <<<<<<< HEAD
     "version": "1.7.0",
-  =======
-    "version": "1.6.6",
-  >>>>>>> 9226e722de6d624550fd9068467132e817667f65
     "description": "fetch mock for jest",
     "main": "src/index.js",
     "types": "src/index.d.ts",
