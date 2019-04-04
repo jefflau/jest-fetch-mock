@@ -529,8 +529,7 @@ import { request } from './api'
 describe('testing timeouts', () => {
   it('resolves with function and timeout', async () => {
     fetch.mockResponseOnce(
-      () => new Promise(resolve => setTimeout(() => resolve({ body: 'ok' }))),
-      100
+      () => new Promise(resolve => setTimeout(() => resolve({ body: 'ok' }), 100))
     )
     try {
       const response = await request()
