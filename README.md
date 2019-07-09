@@ -34,7 +34,7 @@ Create a `setupJest` file to setup the mock or add this to an existing `setupFil
 
 ```js
 //setupJest.js or similar file
-global.fetch = require('jest-fetch-mock')
+require('jest-fetch-mock').enableMocks()
 ```
 
 Add the setupFile to your jest config in `package.json`:
@@ -48,36 +48,17 @@ Add the setupFile to your jest config in `package.json`:
 }
 ```
 
+With this done, you'll have `fetch` and `fetchMock` available on the global scope. Fetch will be used as usual by your code and you'll use `fetchMock` in your tests
+
 ### TypeScript guide
 
-If you are using TypeScript, then you can follow the instructions below instead.
-
-```
-$ npm install --save-dev jest-fetch-mock
-```
-
-Create a `setupJest.ts` file to setup the mock :
-
-```ts
-import {GlobalWithFetchMock} from "jest-fetch-mock";
-
-const customGlobal: GlobalWithFetchMock = global as GlobalWithFetchMock;
-customGlobal.fetch = require('jest-fetch-mock');
-customGlobal.fetchMock = customGlobal.fetch;
+If you are using TypeScript and receive errors about the `fetchMock` global not existing, 
+add a `global.d.ts` file to the root of your project (or add the following line to an existing global file):
+```typescript
+import 'jest-fetch-mock'
 ```
 
-Add the setupFile to your jest config in `package.json`:
-
-```JSON
-"jest": {
-  "automock": false,
-  "setupFiles": [
-    "./setupJest.ts"
-  ]
-}
-```
-
-With this done, you'll have `fetch` and `fetchMock` available on the global scope. Fetch will be used as usual by your code and you'll use `fetchMock` in your tests.
+You may also need to edit your `tsconfig.json` and add "dom" and/or "es2015" and/or "esnext" to the 'compilerConfig.lib' property
 
 ### Using with Create-React-App
 
@@ -108,23 +89,41 @@ If you are using [Create-React-App](https://github.com/facebookincubator/create-
 ### Functions
 
 Instead of passing body, it is also possible to pass a function that returns a promise.
-The promise should resolve with an object containing body and init props
+The promise should resolve with a string or an object containing body and init props
 
 i.e:
 
+```js
+fetch.mockResponse(() => callMyApi().then(res => ({body: "ok"})))
+// OR
+fetch.mockResponse(() => callMyApi().then(res => "ok"))
 ```
-fetch.mockResponse(() => callMyApi().then(res => ({body: res}))
+
+The function may take optional "input" and "init" parameters corresponding with the arguments to `fetch`:
+```js
+fetch.mockResponse(
+  input => input === "http://myapi" ? 
+    callMyApi().then(res => "ok") : 
+    Promise.reject(new Error("bad url")))
 ```
 
 The same goes for rejects:
 
-```
+```js
 fetch.mockReject(() => doMyAsyncJob().then(res => Promise.reject(res.errorToRaise)))
+// OR
+fetch.mockReject((input, init) => 
+  init && init.headers && init.headers['content-type'] && init.headers['content-type'] === 'text/plain' ?
+    Promise.reject('invalid content type') :
+    doMyAsyncJob().then(res => Promise.reject(res.errorToRaise))
+)
 ```
 
 ### Mock utilities
 
 - `fetch.resetMocks()` - Clear previously set mocks so they do not bleed into other mocks
+- `fetch.enableMocks()` - Enable fetch mocking by overriding `global.fetch` and mocking `node-fetch`
+- `fetch.disableMocks()` - Disable fetch mocking and restore default implementation of `fetch` and/or `node-fetch`
 - `fetch.mock` - The mock state for your fetch calls. Make assertions on the arguments given to `fetch` when called by the functions you are testing. For more information check the [Jest docs](https://facebook.github.io/jest/docs/en/mock-functions.html#mock-property)
 
 For information on the arguments body and init can take, you can look at the MDN docs on the Response Constructor function, which `jest-fetch-mock` uses under the surface.
@@ -537,6 +536,197 @@ describe('testing timeouts', () => {
     } catch (e) {
       throw e
     }
+  })
+})
+```
+
+### Conditional Mocking
+
+In some test scenarios, you may want to only mock fetch requests to some URLs that match a given request path while in others you may want to mock
+all request except those matching a given request path. You may even want to conditionally mock based on request headers.
+
+`fetch.onlyMock`, `fetch.onlyMockOnce`, `fetch.neverMock`, and `fetch.neverMockOnce` cause `jest-fetch-mock` to pass 
+requests through to the concrete fetch implementation conditionally. Calling `fetch.onlyMock` or `fetch.neverMock` overrides the default behavior
+of mocking all requests.  `fetch.onlyMockOnce` and `fetch.neverMockOnce` only overrides the behavior for the next call to `fetch`, then returns
+to the default behavior (either mocking all requests or mocking the requests based on `fetch.onlyMock` and `fetch.neverMock`).
+
+Calling `fetch.resetMocks()` will return to the default behavior of mocking all requests with a text response of empty string.
+
+- `fetch.onlyMock(urlOrPredicate):fetch` - causes all requests to be passed through unless they match the given string/RegExp/predicate 
+    (i.e. "only mock 'fetch' if the request is for the given URL otherwise, use the real fetch implementation").
+- `fetch.neverMock(urlOrPredicate):fetch` - causes all requests to be mocked unless they match the given string/RegExp/predicate
+    (i.e. "never mock 'fetch' if the request is for the given URL, otherwise mock the request")
+- `fetch.onlyMockOnce(urlOrPredicate):fetch` - causes the next request to be passed through unless it matches the given string/RegExp/predicate 
+    (i.e. "only mock 'fetch' if the next request is for the given URL otherwise, use the default behavior").
+- `fetch.neverMockOnce(urlOrPredicate):fetch` - causes all requests to be mocked unless it matches the given string/RegExp/predicate
+    (i.e. "never mock 'fetch' if the next request is for the given URL, otherwise use the default behavior") 
+- `fetch.isMocking(input, init):boolean` - test utility function to see if the given url/request would be mocked
+```js
+
+describe('conditional mocking', () => {
+  const testUrl = 'https://randomuser.me/api'
+  let nodeFetchSpy
+  beforeEach(() => {
+    fetch.resetMocks()
+    fetch.mockResponse('foo')
+    nodeFetchSpy = jest
+      .spyOn(require('cross-fetch'), 'fetch')
+      .mockImplementation(async () => Promise.resolve(new Response('bar')))
+  })
+
+  afterEach(() => {
+    nodeFetchSpy.mockRestore()
+  })
+
+  const expectMocked = async () => {
+    return expect(request()).resolves.toEqual('foo')
+  }
+  const expectUnmocked = async () => {
+    return expect(request()).resolves.toEqual('bar')
+  }
+
+  describe('onlyMock', () => {
+    it("doesn't mock normally", async () => {
+      fetch.onlyMock('http://foo')
+      await expectUnmocked()
+      await expectUnmocked()
+    })
+    it('mocks when matches string', async () => {
+      fetch.onlyMock(testUrl)
+      await expectMocked()
+      await expectMocked()
+    })
+    it('mocks when matches regex', async () => {
+      fetch.onlyMock(new RegExp(testUrl))
+      await expectMocked()
+      await expectMocked()
+    })
+    it('mocks when matches predicate', async () => {
+      fetch.onlyMock(input => input === testUrl)
+      await expectMocked()
+      await expectMocked()
+    })
+  })
+
+  describe('neverMock', () => {
+    it('mocks normally', async () => {
+      fetch.neverMock('http://foo')
+      await expectMocked()
+      await expectMocked()
+    })
+    it('doesnt mock when matches string', async () => {
+      fetch.neverMock(testUrl)
+      await expectUnmocked()
+      await expectUnmocked()
+    })
+    it('doesnt mock when matches regex', async () => {
+      fetch.neverMock(new RegExp(testUrl))
+      await expectUnmocked()
+      await expectUnmocked()
+    })
+    it('doesnt mock when matches predicate', async () => {
+      fetch.neverMock(input => input === testUrl)
+      await expectUnmocked()
+      await expectUnmocked()
+    })
+  })
+
+  describe('onlyMockOnce (default mocked)', () => {
+    it("doesn't mock normally", async () => {
+      fetch.onlyMockOnce('http://foo')
+      await expectUnmocked()
+      await expectMocked()
+    })
+    it('mocks when matches string', async () => {
+      fetch.onlyMockOnce(testUrl)
+      await expectMocked()
+      await expectMocked()
+    })
+    it('mocks when matches regex', async () => {
+      fetch.onlyMockOnce(new RegExp(testUrl))
+      await expectMocked()
+      await expectMocked()
+    })
+    it('mocks when matches predicate', async () => {
+      fetch.onlyMockOnce(input => input === testUrl)
+      await expectMocked()
+      await expectMocked()
+    })
+  })
+
+  describe('neverMockOnce (default mocked)', () => {
+    it('mocks normally', async () => {
+      fetch.neverMockOnce('http://foo')
+      await expectMocked()
+      await expectMocked()
+    })
+    it('doesnt mock when matches string', async () => {
+      fetch.neverMockOnce(testUrl)
+      await expectUnmocked()
+      await expectMocked()
+    })
+    it('doesnt mock when matches regex', async () => {
+      fetch.neverMockOnce(new RegExp(testUrl))
+      await expectUnmocked()
+      await expectMocked()
+    })
+    it('doesnt mock when matches predicate', async () => {
+      fetch.neverMockOnce(input => input === testUrl)
+      await expectUnmocked()
+      await expectMocked()
+    })
+  })
+
+  describe('onlyMockOnce (default unmocked)', () => {
+    beforeEach(() => {
+      fetch.onlyMock('_unknown_')
+    })
+    it("doesn't mock normally", async () => {
+      fetch.onlyMockOnce('http://foo')
+      await expectUnmocked()
+      await expectUnmocked()
+    })
+    it('mocks when matches string', async () => {
+      fetch.onlyMockOnce(testUrl)
+      await expectMocked()
+      await expectUnmocked()
+    })
+    it('mocks when matches regex', async () => {
+      fetch.onlyMockOnce(new RegExp(testUrl))
+      await expectMocked()
+      await expectUnmocked()
+    })
+    it('mocks when matches predicate', async () => {
+      fetch.onlyMockOnce(input => input === testUrl)
+      await expectMocked()
+      await expectUnmocked()
+    })
+  })
+
+  describe('neverMockOnce (default unmocked)', () => {
+    beforeEach(() => {
+      fetch.onlyMock('_unknown_')
+    })
+    it('mocks normally', async () => {
+      fetch.neverMockOnce('http://foo')
+      await expectMocked()
+      await expectUnmocked()
+    })
+    it('doesnt mock when matches string', async () => {
+      fetch.neverMockOnce(testUrl)
+      await expectUnmocked()
+      await expectUnmocked()
+    })
+    it('doesnt mock when matches regex', async () => {
+      fetch.neverMockOnce(new RegExp(testUrl))
+      await expectUnmocked()
+      await expectUnmocked()
+    })
+    it('doesnt mock when matches predicate', async () => {
+      fetch.neverMockOnce(input => input === testUrl)
+      await expectUnmocked()
+      await expectUnmocked()
+    })
   })
 })
 ```
