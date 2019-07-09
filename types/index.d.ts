@@ -28,10 +28,14 @@ export interface FetchMock
     mockRejectOnce(error?: ErrorOrFunction): FetchMock;
 
     isMocking(input: string | Request): boolean;
-    neverMock(urlOrPredicate: UrlOrPredicate): FetchMock;
-    neverMockOnce(urlOrPredicate: UrlOrPredicate): FetchMock;
-    onlyMock(urlOrPredicate: UrlOrPredicate): FetchMock;
-    onlyMockOnce(urlOrPredicate: UrlOrPredicate): FetchMock;
+    dontMock(): FetchMock;
+    dontMockOnce(): FetchMock;
+    doMock(): FetchMock;
+    doMockOnce(): FetchMock;
+    neverMockIf(urlOrPredicate: UrlOrPredicate): FetchMock;
+    neverMockOnceIf(urlOrPredicate: UrlOrPredicate): FetchMock;
+    onlyMockIf(urlOrPredicate: UrlOrPredicate): FetchMock;
+    onlyMockOnceIf(urlOrPredicate: UrlOrPredicate): FetchMock;
 
     resetMocks(): void;
     enableMocks(): void;

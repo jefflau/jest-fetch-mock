@@ -118,23 +118,43 @@ fetch.mockResponses = (...responses) => {
 
 fetch.isMocking = isMocking
 
-fetch.onlyMock = url => {
-  isMocking.mockImplementation(requestMatches(url))
+fetch.onlyMockIf = urlOrPredicate => {
+  isMocking.mockImplementation(requestMatches(urlOrPredicate))
   return fetch
 }
 
-fetch.neverMock = url => {
-  isMocking.mockImplementation(requestNotMatches(url))
+fetch.neverMockIf = urlOrPredicate => {
+  isMocking.mockImplementation(requestNotMatches(urlOrPredicate))
   return fetch
 }
 
-fetch.onlyMockOnce = url => {
-  isMocking.mockImplementationOnce(requestMatches(url))
+fetch.onlyMockOnceIf = urlOrPredicate => {
+  isMocking.mockImplementationOnce(requestMatches(urlOrPredicate))
   return fetch
 }
 
-fetch.neverMockOnce = url => {
-  isMocking.mockImplementationOnce(requestNotMatches(url))
+fetch.neverMockOnceIf = urlOrPredicate => {
+  isMocking.mockImplementationOnce(requestNotMatches(urlOrPredicate))
+  return fetch
+}
+
+fetch.dontMock = () => {
+  isMocking.mockImplementation(() => false)
+  return fetch
+}
+
+fetch.dontMockOnce = () => {
+  isMocking.mockImplementationOnce(() => false)
+  return fetch
+}
+
+fetch.doMock = () => {
+  isMocking.mockImplementation(() => true)
+  return fetch
+}
+
+fetch.doMockOnce = () => {
+  isMocking.mockImplementationOnce(() => true)
   return fetch
 }
 
@@ -144,7 +164,7 @@ fetch.resetMocks = () => {
 
   // reset to default implementation with each reset
   fetch.mockImplementation(normalizeResponse(''))
-  isMocking.mockImplementation(() => true)
+  fetch.doMock()
   fetch.isMocking = isMocking
 }
 

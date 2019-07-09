@@ -347,150 +347,177 @@ describe('conditional mocking', () => {
     return expect(request()).resolves.toEqual('bar')
   }
 
-  describe('onlyMock', () => {
+  describe('onlyMockIf', () => {
     it("doesn't mock normally", async () => {
-      fetch.onlyMock('http://foo')
+      fetch.onlyMockIf('http://foo')
       await expectUnmocked()
       await expectUnmocked()
     })
     it('mocks when matches string', async () => {
-      fetch.onlyMock(testUrl)
+      fetch.onlyMockIf(testUrl)
       await expectMocked()
       await expectMocked()
     })
     it('mocks when matches regex', async () => {
-      fetch.onlyMock(new RegExp(testUrl))
+      fetch.onlyMockIf(new RegExp(testUrl))
       await expectMocked()
       await expectMocked()
     })
     it('mocks when matches predicate', async () => {
-      fetch.onlyMock(input => input === testUrl)
+      fetch.onlyMockIf(input => input === testUrl)
       await expectMocked()
       await expectMocked()
     })
   })
 
-  describe('neverMock', () => {
+  describe('neverMockIf', () => {
     it('mocks normally', async () => {
-      fetch.neverMock('http://foo')
+      fetch.neverMockIf('http://foo')
       await expectMocked()
       await expectMocked()
     })
     it('doesnt mock when matches string', async () => {
-      fetch.neverMock(testUrl)
+      fetch.neverMockIf(testUrl)
       await expectUnmocked()
       await expectUnmocked()
     })
     it('doesnt mock when matches regex', async () => {
-      fetch.neverMock(new RegExp(testUrl))
+      fetch.neverMockIf(new RegExp(testUrl))
       await expectUnmocked()
       await expectUnmocked()
     })
     it('doesnt mock when matches predicate', async () => {
-      fetch.neverMock(input => input === testUrl)
+      fetch.neverMockIf(input => input === testUrl)
       await expectUnmocked()
       await expectUnmocked()
     })
   })
 
-  describe('onlyMockOnce (default mocked)', () => {
+  describe('onlyMockOnceIf (default mocked)', () => {
     it("doesn't mock normally", async () => {
-      fetch.onlyMockOnce('http://foo')
+      fetch.onlyMockOnceIf('http://foo')
       await expectUnmocked()
       await expectMocked()
     })
     it('mocks when matches string', async () => {
-      fetch.onlyMockOnce(testUrl)
+      fetch.onlyMockOnceIf(testUrl)
       await expectMocked()
       await expectMocked()
     })
     it('mocks when matches regex', async () => {
-      fetch.onlyMockOnce(new RegExp(testUrl))
+      fetch.onlyMockOnceIf(new RegExp(testUrl))
       await expectMocked()
       await expectMocked()
     })
     it('mocks when matches predicate', async () => {
-      fetch.onlyMockOnce(input => input === testUrl)
+      fetch.onlyMockOnceIf(input => input === testUrl)
       await expectMocked()
       await expectMocked()
     })
   })
 
-  describe('neverMockOnce (default mocked)', () => {
+  describe('neverMockOnceIf (default mocked)', () => {
     it('mocks normally', async () => {
-      fetch.neverMockOnce('http://foo')
+      fetch.neverMockOnceIf('http://foo')
       await expectMocked()
       await expectMocked()
     })
     it('doesnt mock when matches string', async () => {
-      fetch.neverMockOnce(testUrl)
+      fetch.neverMockOnceIf(testUrl)
       await expectUnmocked()
       await expectMocked()
     })
     it('doesnt mock when matches regex', async () => {
-      fetch.neverMockOnce(new RegExp(testUrl))
+      fetch.neverMockOnceIf(new RegExp(testUrl))
       await expectUnmocked()
       await expectMocked()
     })
     it('doesnt mock when matches predicate', async () => {
-      fetch.neverMockOnce(input => input === testUrl)
+      fetch.neverMockOnceIf(input => input === testUrl)
       await expectUnmocked()
       await expectMocked()
     })
   })
 
-  describe('onlyMockOnce (default unmocked)', () => {
+  describe('onlyMockOnceIf (default unmocked)', () => {
     beforeEach(() => {
-      fetch.onlyMock('_unknown_')
+      fetch.dontMock()
     })
     it("doesn't mock normally", async () => {
-      fetch.onlyMockOnce('http://foo')
+      fetch.onlyMockOnceIf('http://foo')
       await expectUnmocked()
       await expectUnmocked()
     })
     it('mocks when matches string', async () => {
-      fetch.onlyMockOnce(testUrl)
+      fetch.onlyMockOnceIf(testUrl)
       await expectMocked()
       await expectUnmocked()
     })
     it('mocks when matches regex', async () => {
-      fetch.onlyMockOnce(new RegExp(testUrl))
+      fetch.onlyMockOnceIf(new RegExp(testUrl))
       await expectMocked()
       await expectUnmocked()
     })
     it('mocks when matches predicate', async () => {
-      fetch.onlyMockOnce(input => input === testUrl)
+      fetch.onlyMockOnceIf(input => input === testUrl)
       await expectMocked()
       await expectUnmocked()
     })
   })
 
-  describe('neverMockOnce (default unmocked)', () => {
+  describe('neverMockOnceIf (default unmocked)', () => {
     beforeEach(() => {
-      fetch.onlyMock('_unknown_')
+      fetch.dontMock()
     })
     it('mocks normally', async () => {
-      fetch.neverMockOnce('http://foo')
+      fetch.neverMockOnceIf('http://foo')
       await expectMocked()
       await expectUnmocked()
     })
     it('doesnt mock when matches string', async () => {
-      fetch.neverMockOnce(testUrl)
+      fetch.neverMockOnceIf(testUrl)
       await expectUnmocked()
       await expectUnmocked()
     })
     it('doesnt mock when matches regex', async () => {
-      fetch.neverMockOnce(new RegExp(testUrl))
+      fetch.neverMockOnceIf(new RegExp(testUrl))
       await expectUnmocked()
       await expectUnmocked()
     })
     it('doesnt mock when matches predicate', async () => {
-      fetch.neverMockOnce(input => input === testUrl)
+      fetch.neverMockOnceIf(input => input === testUrl)
       await expectUnmocked()
+      await expectUnmocked()
+    })
+  })
+
+  describe("dont/do mock", () => {
+    test("dontMock", async () => {
+      fetch.dontMock()
+      await expectUnmocked()
+      await expectUnmocked()
+    })
+    test("dontMockOnce", async () => {
+      fetch.dontMockOnce()
+      await expectUnmocked()
+      await expectMocked()
+    })
+    test("doMock", async () => {
+      fetch.dontMock()
+      fetch.doMock()
+      await expectMocked()
+      await expectMocked()
+    })
+    test("doMockOnce", async () => {
+      fetch.dontMock()
+      fetch.doMockOnce()
+      await expectMocked()
       await expectUnmocked()
     })
   })
 })
+
+
 
 it('enable/disable', () => {
   const jestFetchMock = require('jest-fetch-mock')

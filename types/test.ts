@@ -59,13 +59,24 @@ fetchMock.disableMocks();
 
 fetchMock.isMocking("http://bar");
 fetchMock.isMocking(new Request("http://bang"));
-fetchMock.onlyMock('http://foo');
 
-fetchMock.onlyMock(/bar/);
-fetchMock.onlyMock((input:Request|string) => true);
-fetchMock.neverMock('http://foo');
-fetchMock.neverMock(/bar/);
-fetchMock.neverMock((input:Request|string) => true);
+fetchMock.onlyMockIf('http://foo');
+fetchMock.onlyMockIf(/bar/);
+fetchMock.onlyMockIf((input:Request|string) => true);
+fetchMock.neverMockIf('http://foo');
+fetchMock.neverMockIf(/bar/);
+fetchMock.neverMockIf((input:Request|string) => true);
+fetchMock.onlyMockOnceIf('http://foo');
+fetchMock.onlyMockOnceIf(/bar/);
+fetchMock.onlyMockOnceIf((input:Request|string) => true);
+fetchMock.neverMockOnceIf('http://foo');
+fetchMock.neverMockOnceIf(/bar/);
+fetchMock.neverMockOnceIf((input:Request|string) => true);
+
+fetchMock.doMock();
+fetchMock.dontMock();
+fetchMock.doMockOnce();
+fetchMock.dontMockOnce();
 
 async function someAsyncHandler(): Promise<MockResponseInit> {
     return {
