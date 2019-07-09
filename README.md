@@ -556,9 +556,9 @@ Calling `fetch.resetMocks()` will return to the default behavior of mocking all 
     (i.e. "only mock 'fetch' if the request is for the given URL otherwise, use the real fetch implementation").
 - `fetch.neverMock(urlOrPredicate):fetch` - causes all requests to be mocked unless they match the given string/RegExp/predicate
     (i.e. "never mock 'fetch' if the request is for the given URL, otherwise mock the request")
-- `fetch.onlyMockOnce(urlOrPredicate):fetch` - causes the next request to be passed through unless it matches the given string/RegExp/predicate 
+- `fetch.onlyMockOnce(urlOrPredicate):fetch` - causes the next request to mocked if it matches the given string/RegExp/predicate
     (i.e. "only mock 'fetch' if the next request is for the given URL otherwise, use the default behavior").
-- `fetch.neverMockOnce(urlOrPredicate):fetch` - causes all requests to be mocked unless it matches the given string/RegExp/predicate
+- `fetch.neverMockOnce(urlOrPredicate):fetch` - causes the next request to be passed through if it matches the given string/RegExp/predicate
     (i.e. "never mock 'fetch' if the next request is for the given URL, otherwise use the default behavior") 
 - `fetch.isMocking(input, init):boolean` - test utility function to see if the given url/request would be mocked
 ```js
