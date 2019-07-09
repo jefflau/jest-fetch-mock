@@ -218,15 +218,20 @@ describe('request', () => {
   })
 
   it('resolves with function and timeout', async () => {
+    jest.useFakeTimers()
     fetch.mockResponseOnce(
-      () => new Promise(resolve => setTimeout(() => resolve({ body: 'ok' }))),
-      100
+      () =>
+        new Promise(resolve => setTimeout(() => resolve({ body: 'ok' }), 5000))
     )
     try {
-      const response = await request()
+      const req = request()
+      jest.runAllTimers()
+      const response = await req
       expect(response).toEqual('ok')
     } catch (e) {
       throw e
+    } finally {
+      jest.useRealTimers()
     }
   })
 
