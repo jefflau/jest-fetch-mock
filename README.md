@@ -33,8 +33,15 @@ $ npm install --save-dev jest-fetch-mock
 Create a `setupJest` file to setup the mock or add this to an existing `setupFile`. :
 
 ```js
-//setupJest.js or similar file
+//do this in the setupJest.js or similar file
+//import jest-fetch-mock module and override the global fetch object
+
+//example with RequireJS module loader
 global.fetch = require('jest-fetch-mock')
+
+//OR example with ES6 import module loader
+import jestFetchMock from 'jest-fetch-mock'
+global.fetch = jestFetchMock
 ```
 
 Add the setupFile to your jest config in `package.json`:
