@@ -36,7 +36,7 @@ Create a `setupJest` file to setup the mock or add this to an existing `setupFil
 //do this in the setupJest.js or similar file
 //import jest-fetch-mock module and override the global fetch object
 
-//example with RequireJS module loader
+//example with CommonJS modules
 global.fetch = require('jest-fetch-mock')
 
 //OR example with ES6 import module loader
