@@ -1,4 +1,4 @@
-import { APIRequest, APIRequest2, request } from './api'
+import { APIRequest, APIRequest2, defaultRequestUri, request } from './api'
 
 describe('testing mockResponse and alias once', () => {
   beforeEach(() => {
@@ -326,25 +326,29 @@ describe('request', () => {
 })
 
 describe('conditional mocking', () => {
-  const testUrl = 'https://randomuser.me/api'
-  let nodeFetchSpy
+  const realResponse = 'REAL FETCH RESPONSE'
+  const mockedDefaultResponse = 'MOCKED DEFAULT RESPONSE'
+  const testUrl = defaultRequestUri
+  let crossFetchSpy
   beforeEach(() => {
     fetch.resetMocks()
-    fetch.mockResponse('foo')
-    nodeFetchSpy = jest
+    fetch.mockResponse(mockedDefaultResponse)
+    crossFetchSpy = jest
       .spyOn(require('cross-fetch'), 'fetch')
-      .mockImplementation(async () => Promise.resolve(new Response('bar')))
+      .mockImplementation(async () =>
+        Promise.resolve(new Response(realResponse))
+      )
   })
 
   afterEach(() => {
-    nodeFetchSpy.mockRestore()
+    crossFetchSpy.mockRestore()
   })
 
-  const expectMocked = async () => {
-    return expect(request()).resolves.toEqual('foo')
+  const expectMocked = async (uri, response = mockedDefaultResponse) => {
+    return expect(request(uri)).resolves.toEqual(response)
   }
-  const expectUnmocked = async () => {
-    return expect(request()).resolves.toEqual('bar')
+  const expectUnmocked = async uri => {
+    return expect(request(uri)).resolves.toEqual(realResponse)
   }
 
   describe('onlyMockIf', () => {
@@ -491,33 +495,188 @@ describe('conditional mocking', () => {
     })
   })
 
-  describe("dont/do mock", () => {
-    test("dontMock", async () => {
+  describe('dont/do mock', () => {
+    test('dontMock', async () => {
       fetch.dontMock()
       await expectUnmocked()
       await expectUnmocked()
     })
-    test("dontMockOnce", async () => {
+    test('dontMockOnce', async () => {
       fetch.dontMockOnce()
       await expectUnmocked()
       await expectMocked()
     })
-    test("doMock", async () => {
+    test('doMock', async () => {
       fetch.dontMock()
       fetch.doMock()
       await expectMocked()
       await expectMocked()
     })
-    test("doMockOnce", async () => {
+    test('doMockOnce', async () => {
       fetch.dontMock()
       fetch.doMockOnce()
       await expectMocked()
       await expectUnmocked()
     })
   })
+
+  describe('complex example', () => {
+    const alternativeUrl = 'http://bar'
+    const alternativeBody = 'ALTERNATIVE RESPONSE'
+    beforeEach(() => {
+      fetch
+        // .mockResponse(mockedDefaultResponse) // set above - here for clarity
+        .once('1') // 1
+        .once('2') // 2
+        .once(async uri => (uri === alternativeUrl ? alternativeBody : '3')) // 3
+        .once('4') // 4
+        .once('5') // 5
+        .once(async uri =>
+          uri === alternativeUrl ? alternativeBody : mockedDefaultResponse
+        ) // 6
+    })
+
+    describe('default (`doMock`)', () => {
+      beforeEach(() => {
+        fetch
+          // .doMock()    // the default - here for clarify
+          .neverMockOnceIf(alternativeUrl)
+          .onlyMockOnceIf(alternativeUrl)
+          .doMockOnce()
+          .dontMockOnce()
+      })
+
+      test('defaultRequestUri', async () => {
+        await expectMocked(defaultRequestUri, '1') // 1
+        await expectUnmocked(defaultRequestUri) // 2
+        await expectMocked(defaultRequestUri, '3') // 3
+        await expectUnmocked(defaultRequestUri) // 4
+        // after .once('..')
+        await expectMocked(defaultRequestUri, '5') // 5
+        await expectMocked(defaultRequestUri, mockedDefaultResponse) // 6
+        // default 'isMocked' (not 'Once')
+        await expectMocked(defaultRequestUri, mockedDefaultResponse) // 7
+      })
+
+      test('alternativeUrl', async () => {
+        await expectUnmocked(alternativeUrl) // 1
+        await expectMocked(alternativeUrl, '2') // 2
+        await expectMocked(alternativeUrl, alternativeBody) // 3
+        await expectUnmocked(alternativeUrl) // 4
+        // after .once('..')
+        await expectMocked(alternativeUrl, '5') // 5
+        await expectMocked(alternativeUrl, alternativeBody) // 6
+        // default 'isMocked' (not 'Once')
+        await expectMocked(alternativeUrl, mockedDefaultResponse) // 7
+      })
+    })
+
+    describe('dontMock', () => {
+      beforeEach(() => {
+        fetch
+          .dontMock()
+          .neverMockOnceIf(alternativeUrl)
+          .onlyMockOnceIf(alternativeUrl)
+          .doMockOnce()
+          .dontMockOnce()
+      })
+
+      test('defaultRequestUri', async () => {
+        await expectMocked(defaultRequestUri, '1') // 1
+        await expectUnmocked(defaultRequestUri) // 2
+        await expectMocked(defaultRequestUri, '3') // 3
+        await expectUnmocked(defaultRequestUri) // 4
+        // after .once('..')
+        await expectUnmocked(defaultRequestUri) // 5
+        await expectUnmocked(defaultRequestUri) // 6
+        // default 'isMocked' (not 'Once')
+        await expectUnmocked(defaultRequestUri) // 7
+      })
+
+      test('alternativeUrl', async () => {
+        await expectUnmocked(alternativeUrl) // 1
+        await expectMocked(alternativeUrl, '2') // 2
+        await expectMocked(alternativeUrl, alternativeBody) // 3
+        await expectUnmocked(alternativeUrl) // 4
+        // after .once('..')
+        await expectUnmocked(alternativeUrl) // 5
+        await expectUnmocked(alternativeUrl) // 6
+        // default 'isMocked' (not 'Once')
+        await expectUnmocked(alternativeUrl) // 7
+      })
+    })
+
+    describe('onlyMockIf(alternativeUrl)', () => {
+      beforeEach(() => {
+        fetch
+          .onlyMockIf(alternativeUrl)
+          .neverMockOnceIf(alternativeUrl)
+          .onlyMockOnceIf(alternativeUrl)
+          .doMockOnce()
+          .dontMockOnce()
+      })
+
+      test('defaultRequestUri', async () => {
+        await expectMocked(defaultRequestUri, '1') // 1
+        await expectUnmocked(defaultRequestUri) // 2
+        await expectMocked(defaultRequestUri, '3') // 3
+        await expectUnmocked(defaultRequestUri) // 4
+        // after .once('..')
+        await expectUnmocked(defaultRequestUri) // 5
+        await expectUnmocked(defaultRequestUri) // 6
+        // default 'isMocked' (not 'Once')
+        await expectUnmocked(defaultRequestUri) // 7
+      })
+
+      test('alternativeUrl', async () => {
+        await expectUnmocked(alternativeUrl) // 1
+        await expectMocked(alternativeUrl, '2') // 2
+        await expectMocked(alternativeUrl, alternativeBody) // 3
+        await expectUnmocked(alternativeUrl) // 4
+        // after .once('..')
+        await expectMocked(alternativeUrl, '5') // 5
+        await expectMocked(alternativeUrl, alternativeBody) // 6
+        // default 'isMocked' (not 'Once')
+        await expectMocked(alternativeUrl, mockedDefaultResponse) // 7
+      })
+    })
+
+    describe('neverMockIf(alternativeUrl)', () => {
+      beforeEach(() => {
+        fetch
+          .neverMockIf(alternativeUrl)
+          .neverMockOnceIf(alternativeUrl)
+          .onlyMockOnceIf(alternativeUrl)
+          .doMockOnce()
+          .dontMockOnce()
+      })
+
+      test('defaultRequestUri', async () => {
+        await expectMocked(defaultRequestUri, '1') // 1
+        await expectUnmocked(defaultRequestUri) // 2
+        await expectMocked(defaultRequestUri, '3') // 3
+        await expectUnmocked(defaultRequestUri) // 4
+        // after .once('..')
+        await expectMocked(defaultRequestUri, '5') // 5
+        await expectMocked(defaultRequestUri, mockedDefaultResponse) // 6
+        // default 'isMocked' (not 'Once')
+        await expectMocked(defaultRequestUri, mockedDefaultResponse) // 7
+      })
+
+      test('alternativeUrl', async () => {
+        await expectUnmocked(alternativeUrl) // 1
+        await expectMocked(alternativeUrl, '2') // 2
+        await expectMocked(alternativeUrl, alternativeBody) // 3
+        await expectUnmocked(alternativeUrl) // 4
+        // after .once('..')
+        await expectUnmocked(alternativeUrl) // 5
+        await expectUnmocked(alternativeUrl) // 6
+        // default 'isMocked' (not 'Once')
+        await expectUnmocked(alternativeUrl) // 7
+      })
+    })
+  })
 })
-
-
 
 it('enable/disable', () => {
   const jestFetchMock = require('jest-fetch-mock')
