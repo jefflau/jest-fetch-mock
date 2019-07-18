@@ -81,7 +81,13 @@ With this done, you'll have `fetch` and `fetchMock` available on the global scop
 
 ### Using with Create-React-App
 
-If you are using [Create-React-App](https://github.com/facebookincubator/create-react-app) (CRA), the code for `setupTest.js` above should be placed into `src/setupTests.js` in the root of your project. CRA automatically uses this filename by convention in the Jest configuration it generates. Similarly, changing to your `package.json` is not required as CRA handles this when generating your Jest configuration.
+If you are using [Create-React-App](https://github.com/facebookincubator/create-react-app) (CRA), place in `src/setupTest.js` the following code:
+
+```javascript
+import FetchMock from 'jest-fetch-mock';
+global.fetch = FetchMock;
+```
+CRA automatically uses this filename by convention in the Jest configuration it generates. Similarly, changing to your package.json is not required as CRA handles this when generating your Jest configuration.
 
 ### For Ejected Create React Apps _ONLY_:
 
