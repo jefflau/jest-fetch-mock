@@ -42,7 +42,6 @@ export interface FetchMock
     disableMocks(): void;
 }
 
-// reference: https://github.github.io/fetch/#Response
 export interface MockParams {
     status?: number;
     statusText?: string;

@@ -54,11 +54,13 @@ function requestMatches(urlOrPredicate) {
   if (typeof urlOrPredicate === 'function') {
     return urlOrPredicate
   }
+  const predicate =
+    urlOrPredicate instanceof RegExp
+      ? input => urlOrPredicate.exec(input) !== null
+      : input => input === urlOrPredicate
   return input => {
     const requestUrl = typeof input === 'object' ? input.url : input
-    return urlOrPredicate instanceof RegExp
-      ? urlOrPredicate.exec(requestUrl) !== null
-      : urlOrPredicate === requestUrl
+    return predicate(requestUrl)
   }
 }
 
@@ -104,7 +106,8 @@ const mockResponseOnce = (bodyOrFunction, init) =>
 
 fetch.mockResponseOnce = mockResponseOnce
 
-fetch.once = mockResponseOnce
+fetch.once = (bodyOrFunction, init) =>
+  mockResponseOnce(bodyOrFunction, init).doMockOnce()
 
 fetch.mockRejectOnce = errorOrFunction =>
   fetch.mockImplementationOnce(normalizeError(errorOrFunction))

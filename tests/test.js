@@ -351,6 +351,22 @@ describe('conditional mocking', () => {
     return expect(request(uri)).resolves.toEqual(realResponse)
   }
 
+  describe('once', () => {
+    it('default', async () => {
+      const otherResponse = 'other response'
+      fetch.once(otherResponse)
+      await expectMocked(defaultRequestUri, otherResponse)
+      await expectMocked()
+    })
+    it('dont mock then once', async () => {
+      const otherResponse = 'other response'
+      fetch.dontMock()
+      fetch.once(otherResponse)
+      await expectMocked(defaultRequestUri, otherResponse)
+      await expectUnmocked()
+    })
+  })
+
   describe('onlyMockIf', () => {
     it("doesn't mock normally", async () => {
       fetch.onlyMockIf('http://foo')
@@ -526,12 +542,14 @@ describe('conditional mocking', () => {
     beforeEach(() => {
       fetch
         // .mockResponse(mockedDefaultResponse) // set above - here for clarity
-        .once('1') // 1
-        .once('2') // 2
-        .once(async uri => (uri === alternativeUrl ? alternativeBody : '3')) // 3
-        .once('4') // 4
-        .once('5') // 5
-        .once(async uri =>
+        .mockResponseOnce('1') // 1
+        .mockResponseOnce('2') // 2
+        .mockResponseOnce(async uri =>
+          uri === alternativeUrl ? alternativeBody : '3'
+        ) // 3
+        .mockResponseOnce('4') // 4
+        .mockResponseOnce('5') // 5
+        .mockResponseOnce(async uri =>
           uri === alternativeUrl ? alternativeBody : mockedDefaultResponse
         ) // 6
     })

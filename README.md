@@ -80,7 +80,7 @@ If you are using [Create-React-App](https://github.com/facebookincubator/create-
 
 - `fetch.mockResponse(bodyOrFunction, init): fetch` - Mock all fetch calls
 - `fetch.mockResponseOnce(bodyOrFunction, init): fetch` - Mock each fetch call independently
-- `fetch.once(bodyOrFunction, init): fetch` - Alias for mockResponseOnce
+- `fetch.once(bodyOrFunction, init): fetch` - Alias for `mockResponseOnce(bodyOrFunction, init).doMockOnce()` (see [Conditional Mocking](#conditional-mocking)) 
 - `fetch.mockResponses(...responses): fetch` - Mock multiple fetch calls independently
   - Each argument is an array taking `[bodyOrFunction, init]`
 - `fetch.mockReject(errorOrFunction): fetch` - Mock all fetch calls, letting them fail directly
@@ -141,7 +141,7 @@ In most of the complicated examples below, I am testing my action creators in Re
 
 In this simple example I won't be using any libraries. It is a simple fetch request, in this case to google.com. First we setup the `beforeEach` callback to reset our mocks. This isn't strictly necessary in this example, but since we will probably be mocking fetch more than once, we need to reset it across our tests to assert on the arguments given to fetch.
 
-Once we've done that we can start to mock our response. We want to give it an objectwith a `data` property and a string value of `12345` and wrap it in `JSON.stringify` to JSONify it. Here we use `mockResponseOnce`, but we could also use `once`, which is an alias.
+Once we've done that we can start to mock our response. We want to give it an objectwith a `data` property and a string value of `12345` and wrap it in `JSON.stringify` to JSONify it. Here we use `mockResponseOnce`, but we could also use `once`, which is an alias for a call to `mockResponseOnce` then `doMockOnce` (see [Conditional Mocking](#conditional-mocking)).
 
 We then call the function that we want to test with the arguments we want to test with. In the `then` callback we assert we have got the correct data back.
 
@@ -271,8 +271,7 @@ describe('Anime details action creators', () => {
       .once(JSON.stringify({ access_token: '12345' }))
       .once(JSON.stringify({ name: 'naruto' }))
 
-    //once is an alias for .mockResponseOnce
-    //
+    //once is an alias for a call to .mockResponseOnce then .doMockOnce
 
     const expectedActions = [
       { type: 'SET_ACCESS_TOKEN', token: { access_token: '12345' } },
@@ -552,7 +551,10 @@ of mocking/not mocking all requests.  `fetch.dontMockOnce`, `fetch.doMockOnce`, 
 for the next call to `fetch`, then returns to the default behavior (either mocking all requests or mocking the requests based on the last call to
 `fetch.dontMock`, `fetch.doMock`, `fetch.onlyMock` and `fetch.neverMock`).
 
-Calling `fetch.resetMocks()` will return to the default behavior of mocking all fetches with a text response of empty string.
+Calling `fetch.resetMocks()` will return to the default behavior of mocking all fetches with a text response of empty string. 
+- `fetch.once(bodyOrFunction, init)` - Same as calling `fetch.mockResponseOnce(bodyOrFunction, init).doMockOnce()`. 
+   Ensures the next request is mocked with the given response (see [Conditional Mocking](#conditional-mocking)).
+   Behaves identically to just calling `mockResponseOnce` if none of the below "dontMock/onlyMock/neverMock" methods were called first.
 - `fetch.dontMock()` - Change the default behavior to not mock any fetches until `fetch.resetMocks()` or `fetch.doMock()` is called
 - `fetch.doMock()` - Reverses `fetch.dontMock()`. This is the default state after `fetch.resetMocks()`
 - `fetch.dontMockOnce()` - For the next fetch, do not mock then return to the default behavior for subsequent fetches. Can be chained.
@@ -594,6 +596,22 @@ describe('conditional mocking', () => {
   const expectUnmocked = async uri => {
     return expect(request(uri)).resolves.toEqual(realResponse)
   }
+  
+  describe('once', () => {
+    it('default', async () => {
+      const otherResponse = 'other response'
+      fetch.once(otherResponse)
+      await expectMocked(defaultRequestUri, otherResponse)
+      await expectMocked()
+    })
+    it('dont mock then once', async () => {
+      const otherResponse = 'other response'
+      fetch.dontMock()
+      fetch.once(otherResponse)
+      await expectMocked(defaultRequestUri, otherResponse)
+      await expectUnmocked()
+    })
+  })
 
   describe('onlyMockIf', () => {
     it("doesn't mock normally", async () => {
@@ -770,12 +788,12 @@ describe('conditional mocking', () => {
     beforeEach(() => {
       fetch
         // .mockResponse(mockedDefaultResponse) // set above - here for clarity
-        .once('1') // 1
-        .once('2') // 2
-        .once(async uri => (uri === alternativeUrl ? alternativeBody : '3')) // 3
-        .once('4') // 4
-        .once('5') // 5
-        .once(async uri =>
+        .mockResponseOnce('1') // 1
+        .mockResponseOnce('2') // 2
+        .mockResponseOnce(async uri => (uri === alternativeUrl ? alternativeBody : '3')) // 3
+        .mockResponseOnce('4') // 4
+        .mockResponseOnce('5') // 5
+        .mockResponseOnce(async uri =>
           uri === alternativeUrl ? alternativeBody : mockedDefaultResponse
         ) // 6
     })
