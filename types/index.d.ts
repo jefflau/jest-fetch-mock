@@ -17,7 +17,7 @@ export interface GlobalWithFetchMock extends Global {
 }
 
 export interface FetchMock
-    extends jest.MockInstance<Promise<Response>, [(string | Request | undefined)?, (RequestInit | undefined)?]> {
+    extends jest.MockInstance<Promise<Response>, [(string | Request | undefined), (RequestInit | undefined)]> {
     (input?: string | Request, init?: RequestInit): Promise<Response>;
 
     mockResponse(body: BodyOrFunction, init?: MockParams): FetchMock;

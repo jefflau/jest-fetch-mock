@@ -62,16 +62,16 @@ fetchMock.isMocking(new Request("http://bang"));
 
 fetchMock.onlyMockIf('http://foo');
 fetchMock.onlyMockIf(/bar/);
-fetchMock.onlyMockIf((input:Request|string) => true);
+fetchMock.onlyMockIf((input: Request|string) => true);
 fetchMock.neverMockIf('http://foo');
 fetchMock.neverMockIf(/bar/);
-fetchMock.neverMockIf((input:Request|string) => true);
+fetchMock.neverMockIf((input: Request|string) => true);
 fetchMock.onlyMockOnceIf('http://foo');
 fetchMock.onlyMockOnceIf(/bar/);
-fetchMock.onlyMockOnceIf((input:Request|string) => true);
+fetchMock.onlyMockOnceIf((input: Request|string) => true);
 fetchMock.neverMockOnceIf('http://foo');
 fetchMock.neverMockOnceIf(/bar/);
-fetchMock.neverMockOnceIf((input:Request|string) => true);
+fetchMock.neverMockOnceIf((input: Request|string) => true);
 
 fetchMock.doMock();
 fetchMock.dontMock();
