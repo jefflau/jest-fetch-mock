@@ -149,7 +149,7 @@ In most of the complicated examples below, I am testing my action creators in Re
 
 In this simple example I won't be using any libraries. It is a simple fetch request, in this case to google.com. First we setup the `beforeEach` callback to reset our mocks. This isn't strictly necessary in this example, but since we will probably be mocking fetch more than once, we need to reset it across our tests to assert on the arguments given to fetch.
 
-Once we've done that we can start to mock our response. We want to give it an objectwith a `data` property and a string value of `12345` and wrap it in `JSON.stringify` to JSONify it. Here we use `mockResponseOnce`, but we could also use `once`, which is an alias for a call to `mockResponseOnce` then `doMockOnce` (see [Conditional Mocking](#conditional-mocking)).
+Once we've done that we can start to mock our response. We want to give it an objectwith a `data` property and a string value of `12345` and wrap it in `JSON.stringify` to JSONify it. Here we use `mockResponseOnce`, but we could also use `once`, which is an alias for a call to `mockResponseOnce`
 
 We then call the function that we want to test with the arguments we want to test with. In the `then` callback we assert we have got the correct data back.
 
@@ -278,8 +278,6 @@ describe('Anime details action creators', () => {
     fetch
       .once(JSON.stringify({ access_token: '12345' }))
       .once(JSON.stringify({ name: 'naruto' }))
-
-    //once is an alias for a call to .mockResponseOnce then .doMockOnce
 
     const expectedActions = [
       { type: 'SET_ACCESS_TOKEN', token: { access_token: '12345' } },
