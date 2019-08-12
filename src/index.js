@@ -121,22 +121,35 @@ fetch.mockResponses = (...responses) => {
 
 fetch.isMocking = isMocking
 
-fetch.onlyMockIf = urlOrPredicate => {
-  isMocking.mockImplementation(requestMatches(urlOrPredicate))
+fetch.mockIf = (urlOrPredicate, { response: bodyOrFunction, init } = {}) => {
+  if (bodyOrFunction) {
+    isMocking.mockImplementation(requestMatches(urlOrPredicate))
+    mockResponseOnce(bodyOrFunction, init)
+  } else {
+    isMocking.mockImplementation(requestMatches(urlOrPredicate))
+  }
   return fetch
 }
 
-fetch.neverMockIf = urlOrPredicate => {
+fetch.dontMockIf = urlOrPredicate => {
   isMocking.mockImplementation(requestNotMatches(urlOrPredicate))
   return fetch
 }
 
-fetch.onlyMockOnceIf = urlOrPredicate => {
-  isMocking.mockImplementationOnce(requestMatches(urlOrPredicate))
+fetch.mockOnceIf = (
+  urlOrPredicate,
+  { response: bodyOrFunction, init } = {}
+) => {
+  if (bodyOrFunction) {
+    isMocking.mockImplementationOnce(requestMatches(urlOrPredicate))
+    mockResponseOnce(bodyOrFunction, init)
+  } else {
+    isMocking.mockImplementationOnce(requestMatches(urlOrPredicate))
+  }
   return fetch
 }
 
-fetch.neverMockOnceIf = urlOrPredicate => {
+fetch.dontMockOnceIf = urlOrPredicate => {
   isMocking.mockImplementationOnce(requestNotMatches(urlOrPredicate))
   return fetch
 }
