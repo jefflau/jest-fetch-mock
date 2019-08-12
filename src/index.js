@@ -106,8 +106,7 @@ const mockResponseOnce = (bodyOrFunction, init) =>
 
 fetch.mockResponseOnce = mockResponseOnce
 
-fetch.once = (bodyOrFunction, init) =>
-  mockResponseOnce(bodyOrFunction, init).doMockOnce()
+fetch.once = (bodyOrFunction, init) => mockResponseOnce(bodyOrFunction, init)
 
 fetch.mockRejectOnce = errorOrFunction =>
   fetch.mockImplementationOnce(normalizeError(errorOrFunction))

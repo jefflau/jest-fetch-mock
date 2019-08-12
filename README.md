@@ -81,7 +81,7 @@ If you are using [Create-React-App](https://github.com/facebookincubator/create-
 
 - `fetch.mockResponse(bodyOrFunction, init): fetch` - Mock all fetch calls
 - `fetch.mockResponseOnce(bodyOrFunction, init): fetch` - Mock each fetch call independently
-- `fetch.once(bodyOrFunction, init): fetch` - Alias for `mockResponseOnce(bodyOrFunction, init).doMockOnce()` (see [Conditional Mocking](#conditional-mocking))
+- `fetch.once(bodyOrFunction, init): fetch` - Alias for `mockResponseOnce(bodyOrFunction, init)`
 - `fetch.mockResponses(...responses): fetch` - Mock multiple fetch calls independently
   - Each argument is an array taking `[bodyOrFunction, init]`
 - `fetch.mockReject(errorOrFunction): fetch` - Mock all fetch calls, letting them fail directly
