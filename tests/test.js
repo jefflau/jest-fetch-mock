@@ -359,16 +359,16 @@ describe('conditional mocking', () => {
       await expectMocked(defaultRequestUri, otherResponse)
       await expectMocked()
     })
-    it('dont mock then once twice', async () => {
+    it('dont mock once then mock twice', async () => {
       const otherResponse = 'other response'
       fetch
-        .dontMock()
+        .dontMockOnce()
         .once(otherResponse)
         .once(otherResponse)
 
-      await expectMocked(defaultRequestUri, otherResponse)
-      await expectMocked(defaultRequestUri, otherResponse)
       await expectUnmocked()
+      await expectMocked(defaultRequestUri, otherResponse)
+      await expectMocked()
     })
   })
 

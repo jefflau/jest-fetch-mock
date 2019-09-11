@@ -553,28 +553,25 @@ You may want to only mock fetch requests to some URLs that match a given request
 all request except those matching a given request path. You may even want to conditionally mock based on request headers.
 
 The conditional mock functions cause `jest-fetch-mock` to pass fetches through to the concrete fetch implementation conditionally.
-Calling `fetch.dontMock`, `fetch.doMock`, `fetch.onlyMockIf` or `fetch.dontMockIf` overrides the default behavior
+Calling `fetch.dontMock`, `fetch.doMock`, `fetch.doMockIf` or `fetch.dontMockIf` overrides the default behavior
 of mocking/not mocking all requests. `fetch.dontMockOnce`, `fetch.doMockOnce`, `fetch.mockOnceIf` and `fetch.dontMockOnceIf` only overrides the behavior
 for the next call to `fetch`, then returns to the default behavior (either mocking all requests or mocking the requests based on the last call to
-`fetch.dontMock`, `fetch.doMock`, `fetch.onlyMock` and `fetch.neverMock`).
+`fetch.dontMock`, `fetch.doMock`, `fetch.doMockIf` and `fetch.dontMockIf`).
 
 Calling `fetch.resetMocks()` will return to the default behavior of mocking all fetches with a text response of empty string.
 
-- `fetch.once(bodyOrFunction, init)` - Same as calling `fetch.mockResponseOnce(bodyOrFunction, init).doMockOnce()`.
-  Ensures the next request is mocked with the given response (see [Conditional Mocking](#conditional-mocking)).
-  Behaves identically to just calling `mockResponseOnce` if none of the below "dontMock/onlyMock/neverMock" methods were called first.
 - `fetch.dontMock()` - Change the default behavior to not mock any fetches until `fetch.resetMocks()` or `fetch.doMock()` is called
 - `fetch.doMock()` - Reverses `fetch.dontMock()`. This is the default state after `fetch.resetMocks()`
 - `fetch.dontMockOnce()` - For the next fetch, do not mock then return to the default behavior for subsequent fetches. Can be chained.
 - `fetch.doMockOnce()` - For the next fetch, mock the response then return to the default behavior for subsequent fetches. Can be chained.
-- `fetch.onlyMockIf(urlOrPredicate):fetch` - causes all fetches to be not be mocked unless they match the given string/RegExp/predicate
+- `fetch.doMockIf(urlOrPredicate):fetch` - causes all fetches to be not be mocked unless they match the given string/RegExp/predicate
   (i.e. "only mock 'fetch' if the request is for the given URL otherwise, use the real fetch implementation")
 - `fetch.dontMockIf(urlOrPredicate):fetch` - causes all fetches to be mocked unless they match the given string/RegExp/predicate
-  (i.e. "never mock 'fetch' if the request is for the given URL, otherwise mock the request")
+  (i.e. "don't mock 'fetch' if the request is for the given URL, otherwise mock the request")
 - `fetch.mockOnceIf(urlOrPredicate):fetch` - causes the next fetch to be mocked if it matches the given string/RegExp/predicate. Can be chained.
   (i.e. "only mock 'fetch' if the next request is for the given URL otherwise, use the default behavior")
 - `fetch.dontMockOnceIf(urlOrPredicate):fetch` - causes the next fetch to be not be mocked if it matches the given string/RegExp/predicate. Can be chained.
-  (i.e. "never mock 'fetch' if the next request is for the given URL, otherwise use the default behavior")
+  (i.e. "don't mock 'fetch' if the next request is for the given URL, otherwise use the default behavior")
 - `fetch.isMocking(input, init):boolean` - test utility function to see if the given url/request would be mocked.
   This is not a read only operation and any "MockOnce" will evaluate (and return to the default behavior)
 
@@ -617,33 +614,37 @@ describe('conditional mocking', () => {
       await expectMocked(defaultRequestUri, otherResponse)
       await expectMocked()
     })
-    it('dont mock then once', async () => {
+    it('dont mock once then mock twice', async () => {
       const otherResponse = 'other response'
-      fetch.dontMock()
-      fetch.once(otherResponse)
-      await expectMocked(defaultRequestUri, otherResponse)
+      fetch
+        .dontMockOnce()
+        .once(otherResponse)
+        .once(otherResponse)
+
       await expectUnmocked()
+      await expectMocked(defaultRequestUri, otherResponse)
+      await expectMocked()
     })
   })
 
-  describe('onlyMockIf', () => {
+  describe('doMockIf', () => {
     it("doesn't mock normally", async () => {
-      fetch.onlyMockIf('http://foo')
+      fetch.doMockIf('http://foo')
       await expectUnmocked()
       await expectUnmocked()
     })
     it('mocks when matches string', async () => {
-      fetch.onlyMockIf(testUrl)
+      fetch.doMockIf(testUrl)
       await expectMocked()
       await expectMocked()
     })
     it('mocks when matches regex', async () => {
-      fetch.onlyMockIf(new RegExp(testUrl))
+      fetch.doMockIf(new RegExp(testUrl))
       await expectMocked()
       await expectMocked()
     })
     it('mocks when matches predicate', async () => {
-      fetch.onlyMockIf(input => input === testUrl)
+      fetch.doMockIf(input => input === testUrl)
       await expectMocked()
       await expectMocked()
     })
@@ -912,10 +913,10 @@ describe('conditional mocking complex', () => {
       })
     })
 
-    describe('onlyMockIf(alternativeUrl)', () => {
+    describe('doMockIf(alternativeUrl)', () => {
       beforeEach(() => {
         fetch
-          .onlyMockIf(alternativeUrl)
+          .doMockIf(alternativeUrl)
           .dontMockOnceIf(alternativeUrl)
           .mockOnceIf(alternativeUrl)
           .doMockOnce()

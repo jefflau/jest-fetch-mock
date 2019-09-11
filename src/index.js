@@ -106,7 +106,7 @@ const mockResponseOnce = (bodyOrFunction, init) =>
 
 fetch.mockResponseOnce = mockResponseOnce
 
-fetch.once = (bodyOrFunction, init) => mockResponseOnce(bodyOrFunction, init)
+fetch.once = mockResponseOnce
 
 fetch.mockRejectOnce = errorOrFunction =>
   fetch.mockImplementationOnce(normalizeError(errorOrFunction))
@@ -185,12 +185,20 @@ fetch.resetMocks = () => {
 
 fetch.enableMocks = () => {
   global.fetchMock = global.fetch = fetch
-  jest.setMock('node-fetch', fetch)
+  try {
+    jest.setMock('node-fetch', fetch)
+  } catch (error) {
+    //ignore
+  }
 }
 
 fetch.disableMocks = () => {
   global.fetch = crossFetch
-  jest.dontMock('node-fetch')
+  try {
+    jest.dontMock('node-fetch')
+  } catch (error) {
+    //ignore
+  }
 }
 
 module.exports = fetch

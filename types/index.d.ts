@@ -32,10 +32,10 @@ export interface FetchMock
     dontMockOnce(): FetchMock;
     doMock(): FetchMock;
     doMockOnce(): FetchMock;
-    neverMockIf(urlOrPredicate: UrlOrPredicate): FetchMock;
-    neverMockOnceIf(urlOrPredicate: UrlOrPredicate): FetchMock;
-    onlyMockIf(urlOrPredicate: UrlOrPredicate): FetchMock;
-    onlyMockOnceIf(urlOrPredicate: UrlOrPredicate): FetchMock;
+    dontMockIf(urlOrPredicate: UrlOrPredicate): FetchMock;
+    dontMockOnceIf(urlOrPredicate: UrlOrPredicate): FetchMock;
+    doMockIf(urlOrPredicate: UrlOrPredicate): FetchMock;
+    doMockOnceIf(urlOrPredicate: UrlOrPredicate): FetchMock;
 
     resetMocks(): void;
     enableMocks(): void;
