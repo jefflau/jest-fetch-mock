@@ -1,4 +1,5 @@
 import { APIRequest, APIRequest2, defaultRequestUri, request } from './api'
+import { Request } from 'cross-fetch'
 
 describe('testing mockResponse and alias once', () => {
   beforeEach(() => {
@@ -54,8 +55,8 @@ describe('testing mockResponse and alias once', () => {
 
   it('mocks a response with chaining with alias .once', async () => {
     fetch
-      .once(JSON.stringify({ secret_data: '12345' }, { status: 200 }))
-      .once(JSON.stringify({ secret_data: '67891' }, { status: 200 }))
+      .once(JSON.stringify({ secret_data: '12345' }), { status: 200 })
+      .once(JSON.stringify({ secret_data: '67891' }), { status: 200 })
 
     const response = await APIRequest('facebook')
 
@@ -97,6 +98,43 @@ describe('testing mockResponses', () => {
   })
 })
 
+describe('Mocking aborts', () => {
+  beforeEach(() => {
+    fetch.resetMocks()
+    fetch.doMock()
+    jest.useFakeTimers()
+  })
+  afterEach(() => {
+    jest.useRealTimers()
+  })
+
+  it('rejects with an Aborted! Error', () => {
+    fetch.mockAbort()
+    expect(fetch('/')).rejects.toThrow('Aborted!')
+  })
+  it('rejects with an Aborted! Error once then mocks with empty response', async () => {
+    fetch.mockAbortOnce()
+    await expect(fetch('/')).rejects.toThrow('Aborted!')
+    await expect(request()).resolves.toEqual('')
+  })
+
+  it('throws when passed an already aborted abort signal', () => {
+    const c = new AbortController()
+    c.abort()
+    expect(() => fetch('/', { signal: c.signal })).toThrow('Aborted!')
+  })
+
+  it('rejects when aborted before resolved', async () => {
+    const c = new AbortController()
+    fetch.mockResponse(async () => {
+      jest.advanceTimersByTime(60)
+      return ''
+    })
+    setTimeout(() => c.abort(), 50)
+    await expect(fetch('/', { signal: c.signal })).rejects.toThrow('Aborted!')
+  })
+})
+
 describe('Mocking rejects', () => {
   beforeEach(() => {
     fetch.resetMocks()
@@ -118,7 +156,7 @@ describe('request', () => {
   })
 
   it('passes input and init to response function', () => {
-    const url = 'http://foo.bar'
+    const url = 'http://foo.bar/'
     const requestInit = {
       headers: {
         foo: 'bar'
@@ -130,9 +168,9 @@ describe('request', () => {
       }
     }
     const response = 'foobarbang'
-    fetch.mockResponse((input, init) => {
-      expect(input).toEqual(url)
-      expect(init).toEqual(requestInit)
+    fetch.mockResponse(input => {
+      expect(input).toHaveProperty('url', url)
+      expect(input.headers.get('foo')).toEqual('bar')
       return Promise.resolve(response)
     }, responseInit)
     return fetch(url, requestInit).then(resp => {
@@ -428,8 +466,8 @@ describe('conditional mocking', () => {
       const response = 'blah'
       const response2 = 'blah2'
       fetch
-        .mockOnceIf('http://foo', { response })
-        .mockOnceIf('http://foo2', { response: response2 })
+        .mockOnceIf('http://foo', response)
+        .mockOnceIf('http://foo2', response2)
       await expectMocked('http://foo', response)
       await expectMocked('http://foo2', response2)
       //await expectMocked('http://foo3', mockedDefaultResponse)
@@ -547,20 +585,22 @@ describe('conditional mocking', () => {
   })
 
   describe('complex example', () => {
-    const alternativeUrl = 'http://bar'
+    const alternativeUrl = 'http://bar/'
     const alternativeBody = 'ALTERNATIVE RESPONSE'
     beforeEach(() => {
       fetch
         // .mockResponse(mockedDefaultResponse) // set above - here for clarity
         .mockResponseOnce('1') // 1
         .mockResponseOnce('2') // 2
-        .mockResponseOnce(async uri =>
-          uri === alternativeUrl ? alternativeBody : '3'
+        .mockResponseOnce(async request =>
+          request.url === alternativeUrl ? alternativeBody : '3'
         ) // 3
         .mockResponseOnce('4') // 4
         .mockResponseOnce('5') // 5
-        .mockResponseOnce(async uri =>
-          uri === alternativeUrl ? alternativeBody : mockedDefaultResponse
+        .mockResponseOnce(async request =>
+          request.url === alternativeUrl
+            ? alternativeBody
+            : mockedDefaultResponse
         ) // 6
     })
 

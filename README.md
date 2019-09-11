@@ -86,6 +86,8 @@ If you are using [Create-React-App](https://github.com/facebookincubator/create-
   - Each argument is an array taking `[bodyOrFunction, init]`
 - `fetch.mockReject(errorOrFunction): fetch` - Mock all fetch calls, letting them fail directly
 - `fetch.mockRejectOnce(errorOrFunction): fetch` - Let the next fetch call fail directly
+- `fetch.mockAbort(): fetch` - Causes all fetch calls to reject with an "Aborted!" error
+- `fetch.mockAbortOnce(): fetch` - Causes the next fetch call to reject with an "Aborted!" error
 
 ### Functions
 
@@ -256,6 +258,55 @@ describe('Access token action creators', () => {
           expect(store.getActions()).toEqual(expectedActions)
         })
     )
+  })
+})
+```
+
+### Mocking aborted fetches
+
+Fetches can be mocked to act as if they were aborted during the request.  This can be done in 4 ways:
+<ol>
+<li>Using `fetch.mockAborted()`</li>
+<li>Using `fetch.mockAbortedOnce()`</li>
+<li>Passing a request (or request init) with a 'signal' to fetch that has been aborted</li>
+<li>Passing a request (or request init) with a 'signal' to fetch and a async function to `fetch.mockResponse` or `fetch.mockResponseOnce` that causes the signal to abort before returning the response</li>
+</ol>
+
+```js
+describe('Mocking aborts', () => {
+  beforeEach(() => {
+    fetch.resetMocks()
+    fetch.doMock()
+    jest.useFakeTimers()
+  })
+  afterEach(() => {
+    jest.useRealTimers()
+  })
+
+  it('rejects with an Aborted! Error', () => {
+    fetch.mockAbort()
+    expect(fetch('/')).rejects.toThrow('Aborted!')
+  })
+  it('rejects with an Aborted! Error once then mocks with empty response', async () => {
+    fetch.mockAbortOnce()
+    await expect(fetch('/')).rejects.toThrow('Aborted!')
+    await expect(request()).resolves.toEqual('')
+  })
+
+  it('throws when passed an already aborted abort signal', () => {
+    const c = new AbortController()
+    c.abort()
+    expect(() => fetch('/', { signal: c.signal })).toThrow('Aborted!')
+  })
+
+  it('rejects when aborted before resolved', async () => {
+    const c = new AbortController()
+    fetch.mockResponse(async () => {
+      jest.advanceTimersByTime(60)
+      return ''
+    })
+    setTimeout(() => c.abort(), 50)
+    await expect(fetch('/', { signal: c.signal })).rejects.toThrow('Aborted!')
   })
 })
 ```
@@ -554,31 +605,31 @@ all request except those matching a given request path. You may even want to con
 
 The conditional mock functions cause `jest-fetch-mock` to pass fetches through to the concrete fetch implementation conditionally.
 Calling `fetch.dontMock`, `fetch.doMock`, `fetch.doMockIf` or `fetch.dontMockIf` overrides the default behavior
-of mocking/not mocking all requests. `fetch.dontMockOnce`, `fetch.doMockOnce`, `fetch.mockOnceIf` and `fetch.dontMockOnceIf` only overrides the behavior
+of mocking/not mocking all requests. `fetch.dontMockOnce`, `fetch.doMockOnce`, `fetch.doMockOnceIf` and `fetch.dontMockOnceIf` only overrides the behavior
 for the next call to `fetch`, then returns to the default behavior (either mocking all requests or mocking the requests based on the last call to
 `fetch.dontMock`, `fetch.doMock`, `fetch.doMockIf` and `fetch.dontMockIf`).
 
 Calling `fetch.resetMocks()` will return to the default behavior of mocking all fetches with a text response of empty string.
 
 - `fetch.dontMock()` - Change the default behavior to not mock any fetches until `fetch.resetMocks()` or `fetch.doMock()` is called
-- `fetch.doMock()` - Reverses `fetch.dontMock()`. This is the default state after `fetch.resetMocks()`
+- `fetch.doMock(bodyOrFunction?, responseInit?)` - Reverses `fetch.dontMock()`. This is the default state after `fetch.resetMocks()`
 - `fetch.dontMockOnce()` - For the next fetch, do not mock then return to the default behavior for subsequent fetches. Can be chained.
-- `fetch.doMockOnce()` - For the next fetch, mock the response then return to the default behavior for subsequent fetches. Can be chained.
-- `fetch.doMockIf(urlOrPredicate):fetch` - causes all fetches to be not be mocked unless they match the given string/RegExp/predicate
+- `fetch.doMockOnce(bodyOrFunction?, responseInit?)` - For the next fetch, mock the response then return to the default behavior for subsequent fetches. Can be chained.
+- `fetch.doMockIf(urlOrPredicate, bodyOrFunction?, responseInit?):fetch` - causes all fetches to be not be mocked unless they match the given string/RegExp/predicate
   (i.e. "only mock 'fetch' if the request is for the given URL otherwise, use the real fetch implementation")
-- `fetch.dontMockIf(urlOrPredicate):fetch` - causes all fetches to be mocked unless they match the given string/RegExp/predicate
+- `fetch.dontMockIf(urlOrPredicate, bodyOrFunction?, responseInit?):fetch` - causes all fetches to be mocked unless they match the given string/RegExp/predicate
   (i.e. "don't mock 'fetch' if the request is for the given URL, otherwise mock the request")
-- `fetch.mockOnceIf(urlOrPredicate):fetch` - causes the next fetch to be mocked if it matches the given string/RegExp/predicate. Can be chained.
+- `fetch.doMockOnceIf(urlOrPredicate, bodyOrFunction?, responseInit?):fetch` - causes the next fetch to be mocked if it matches the given string/RegExp/predicate. Can be chained.
   (i.e. "only mock 'fetch' if the next request is for the given URL otherwise, use the default behavior")
 - `fetch.dontMockOnceIf(urlOrPredicate):fetch` - causes the next fetch to be not be mocked if it matches the given string/RegExp/predicate. Can be chained.
   (i.e. "don't mock 'fetch' if the next request is for the given URL, otherwise use the default behavior")
 - `fetch.isMocking(input, init):boolean` - test utility function to see if the given url/request would be mocked.
   This is not a read only operation and any "MockOnce" will evaluate (and return to the default behavior)
-
-#### Simple Conditional Mocking examples
+  
+For convenience, all the conditional mocking functions also accept optional parameters after the 1st parameter that call
+  `mockResponse` or `mockResponseOnce` respectively.  This allows you to conditionally mock a response in a single call.
 
 #### Conditional Mocking examples
-
 ```js
 
 describe('conditional mocking', () => {
@@ -673,24 +724,24 @@ describe('conditional mocking', () => {
     })
   })
 
-  describe('mockOnceIf (default mocked)', () => {
+  describe('doMockOnceIf (default mocked)', () => {
     it("doesn't mock normally", async () => {
-      fetch.mockOnceIf('http://foo')
+      fetch.doMockOnceIf('http://foo')
       await expectUnmocked()
       await expectMocked()
     })
     it('mocks when matches string', async () => {
-      fetch.mockOnceIf(testUrl)
+      fetch.doMockOnceIf(testUrl)
       await expectMocked()
       await expectMocked()
     })
     it('mocks when matches regex', async () => {
-      fetch.mockOnceIf(new RegExp(testUrl))
+      fetch.doMockOnceIf(new RegExp(testUrl))
       await expectMocked()
       await expectMocked()
     })
     it('mocks when matches predicate', async () => {
-      fetch.mockOnceIf(input => input === testUrl)
+      fetch.doMockOnceIf(input => input === testUrl)
       await expectMocked()
       await expectMocked()
     })
@@ -719,27 +770,27 @@ describe('conditional mocking', () => {
     })
   })
 
-  describe('mockOnceIf (default unmocked)', () => {
+  describe('doMockOnceIf (default unmocked)', () => {
     beforeEach(() => {
       fetch.dontMock()
     })
     it("doesn't mock normally", async () => {
-      fetch.mockOnceIf('http://foo')
+      fetch.doMockOnceIf('http://foo')
       await expectUnmocked()
       await expectUnmocked()
     })
     it('mocks when matches string', async () => {
-      fetch.mockOnceIf(testUrl)
+      fetch.doMockOnceIf(testUrl)
       await expectMocked()
       await expectUnmocked()
     })
     it('mocks when matches regex', async () => {
-      fetch.mockOnceIf(new RegExp(testUrl))
+      fetch.doMockOnceIf(new RegExp(testUrl))
       await expectMocked()
       await expectUnmocked()
     })
     it('mocks when matches predicate', async () => {
-      fetch.mockOnceIf(input => input === testUrl)
+      fetch.doMockOnceIf(input => input === testUrl)
       await expectMocked()
       await expectUnmocked()
     })
@@ -848,7 +899,7 @@ describe('conditional mocking complex', () => {
         fetch
           // .doMock()    // the default - here for clarify
           .dontMockOnceIf(alternativeUrl)
-          .mockOnceIf(alternativeUrl)
+          .doMockOnceIf(alternativeUrl)
           .doMockOnce()
           .dontMockOnce()
       })
@@ -883,7 +934,7 @@ describe('conditional mocking complex', () => {
         fetch
           .dontMock()
           .dontMockOnceIf(alternativeUrl)
-          .mockOnceIf(alternativeUrl)
+          .doMockOnceIf(alternativeUrl)
           .doMockOnce()
           .dontMockOnce()
       })
@@ -918,7 +969,7 @@ describe('conditional mocking complex', () => {
         fetch
           .doMockIf(alternativeUrl)
           .dontMockOnceIf(alternativeUrl)
-          .mockOnceIf(alternativeUrl)
+          .doMockOnceIf(alternativeUrl)
           .doMockOnce()
           .dontMockOnce()
       })
@@ -953,7 +1004,7 @@ describe('conditional mocking complex', () => {
         fetch
           .dontMockIf(alternativeUrl)
           .dontMockOnceIf(alternativeUrl)
-          .mockOnceIf(alternativeUrl)
+          .doMockOnceIf(alternativeUrl)
           .doMockOnce()
           .dontMockOnce()
       })

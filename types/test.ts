@@ -9,8 +9,7 @@ fetchMock.mockResponse(JSON.stringify({foo: "bar"}), {
 });
 fetchMock.mockResponse(JSON.stringify({foo: "bar"}), {});
 fetchMock.mockResponse(someAsyncHandler);
-fetchMock.mockResponse(someAsyncHandler, {});
-fetchMock.mockResponse(someAsyncStringHandler, {});
+fetchMock.mockResponse(someAsyncStringHandler);
 
 fetchMock.mockResponseOnce(JSON.stringify({foo: "bar"}));
 fetchMock.mockResponseOnce(JSON.stringify({foo: "bar"}), {
@@ -21,8 +20,7 @@ fetchMock.mockResponseOnce(JSON.stringify({foo: "bar"}), {
 });
 fetchMock.mockResponseOnce(JSON.stringify({foo: "bar"}), {});
 fetchMock.mockResponseOnce(someAsyncHandler);
-fetchMock.mockResponseOnce(someAsyncHandler, {});
-fetchMock.mockResponseOnce(someAsyncStringHandler, {});
+fetchMock.mockResponseOnce(someAsyncStringHandler);
 
 fetchMock.once(JSON.stringify({foo: "bar"}));
 fetchMock.once(JSON.stringify({foo: "bar"}), {
@@ -33,18 +31,16 @@ fetchMock.once(JSON.stringify({foo: "bar"}), {
 });
 fetchMock.once(JSON.stringify({foo: "bar"}), {});
 fetchMock.once(someAsyncHandler);
-fetchMock.once(someAsyncHandler, {});
-fetchMock.once(someAsyncStringHandler, {});
 
 fetchMock.mockResponses(JSON.stringify({}), JSON.stringify({foo: "bar"}));
 fetchMock.mockResponses(someAsyncHandler, someAsyncHandler);
 fetchMock.mockResponses(JSON.stringify({}), someAsyncHandler);
 fetchMock.mockResponses(someAsyncHandler, JSON.stringify({}));
-fetchMock.mockResponses([someAsyncHandler, {status: 200}]);
+fetchMock.mockResponses(someAsyncHandler);
 fetchMock.mockResponses([JSON.stringify({foo: "bar"}), {status: 200}]);
 fetchMock.mockResponses(
-    [someAsyncHandler, {status: 200}],
-    [someAsyncStringHandler, {status: 200}],
+    someAsyncHandler,
+    someAsyncStringHandler,
     [JSON.stringify({foo: "bar"}), {status: 200}]
 );
 
