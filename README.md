@@ -102,15 +102,18 @@ fetch.mockResponse(() => callMyApi().then(res => ({ body: 'ok' })))
 fetch.mockResponse(() => callMyApi().then(res => 'ok'))
 ```
 
-The function may take optional "input" and "init" parameters corresponding with the arguments to `fetch`:
+The function may take an optional "request" parameter of type `http.Request`:
 
 ```js
-fetch.mockResponse(input =>
-  input === 'http://myapi'
+fetch.mockResponse(req =>
+  req.url === 'http://myapi/'
     ? callMyApi().then(res => 'ok')
     : Promise.reject(new Error('bad url'))
 )
 ```
+
+Note: the request "url" is parsed and then printed using the equivalent of `new URL(input).href` so it may not match exactly with the URL's passed to `fetch` if they are not fully qualified.
+For example, passing "http://foo.com" to `fetch` will result in the request URL being "http://foo.com/" (note the trailing slash).
 
 The same goes for rejects:
 
@@ -119,11 +122,8 @@ fetch.mockReject(() =>
   doMyAsyncJob().then(res => Promise.reject(res.errorToRaise))
 )
 // OR
-fetch.mockReject((input, init) =>
-  init &&
-  init.headers &&
-  init.headers['content-type'] &&
-  init.headers['content-type'] === 'text/plain'
+fetch.mockReject(req =>
+  req.headers.get('content-type') === 'text/plain'
     ? Promise.reject('invalid content type')
     : doMyAsyncJob().then(res => Promise.reject(res.errorToRaise))
 )
