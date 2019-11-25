@@ -59,10 +59,10 @@ $ npm install --save-dev jest-fetch-mock
 Create a `setupJest.ts` file to setup the mock :
 
 ```ts
-import {GlobalWithFetchMock} from "jest-fetch-mock";
+import fetch, { FetchMock, GlobalWithFetchMock } from "jest-fetch-mock";
 
 const customGlobal: GlobalWithFetchMock = global as GlobalWithFetchMock;
-customGlobal.fetch = require('jest-fetch-mock');
+customGlobal.fetch = fetch as FetchMock;
 customGlobal.fetchMock = customGlobal.fetch;
 ```
 
