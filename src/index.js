@@ -10,7 +10,7 @@ if (!Promise) {
   Promise.finally = require('promise-polyfill').finally
 }
 
-const abort = () => { throw new Error('Aborted') }
+const abort = () => { throw new DOMException('The operation was aborted. ', 'AbortError'); }
 
 const ActualResponse = Response
 
