@@ -17,7 +17,7 @@ export interface GlobalWithFetchMock extends Global {
 }
 
 export interface FetchMock
-    extends jest.MockInstance<Promise<Response>, [(string | Request | undefined), (RequestInit | undefined)]> {
+    extends jest.MockInstance<Promise<Response>, [string | Request | undefined, RequestInit | undefined]> {
     (input?: string | Request, init?: RequestInit): Promise<Response>;
 
     // Response mocking
@@ -42,36 +42,28 @@ export interface FetchMock
     // Conditional Mocking
     isMocking(input: string | Request): boolean;
 
-    doMock(): FetchMock;
-    doMock(fn: MockResponseInitFunction): FetchMock;
+    doMock(fn?: MockResponseInitFunction): FetchMock;
     doMock(response: string, responseInit?: MockParams): FetchMock;
 
-    doMockOnce(): FetchMock;
     doMockOnce(fn?: MockResponseInitFunction): FetchMock;
     doMockOnce(response: string, responseInit?: MockParams): FetchMock;
 
-    doMockIf(urlOrPredicate: UrlOrPredicate): FetchMock;
-    doMockIf(urlOrPredicate: UrlOrPredicate, fn: MockResponseInitFunction): FetchMock;
+    doMockIf(urlOrPredicate: UrlOrPredicate, fn?: MockResponseInitFunction): FetchMock;
     doMockIf(urlOrPredicate: UrlOrPredicate, response: string, responseInit?: MockParams): FetchMock;
 
-    doMockOnceIf(urlOrPredicate: UrlOrPredicate): FetchMock;
-    doMockOnceIf(urlOrPredicate: UrlOrPredicate, fn: MockResponseInitFunction): FetchMock;
+    doMockOnceIf(urlOrPredicate: UrlOrPredicate, fn?: MockResponseInitFunction): FetchMock;
     doMockOnceIf(urlOrPredicate: UrlOrPredicate, response: string, responseInit?: MockParams): FetchMock;
 
-    dontMock(): FetchMock;
-    dontMock(fn: MockResponseInitFunction): FetchMock;
+    dontMock(fn?: MockResponseInitFunction): FetchMock;
     dontMock(response: string, responseInit?: MockParams): FetchMock;
 
-    dontMockOnce(): FetchMock;
     dontMockOnce(fn?: MockResponseInitFunction): FetchMock;
     dontMockOnce(response: string, responseInit?: MockParams): FetchMock;
 
-    dontMockIf(urlOrPredicate: UrlOrPredicate): FetchMock;
-    dontMockIf(urlOrPredicate: UrlOrPredicate, fn: MockResponseInitFunction): FetchMock;
+    dontMockIf(urlOrPredicate: UrlOrPredicate, fn?: MockResponseInitFunction): FetchMock;
     dontMockIf(urlOrPredicate: UrlOrPredicate, response: string, responseInit?: MockParams): FetchMock;
 
-    dontMockOnceIf(urlOrPredicate: UrlOrPredicate): FetchMock;
-    dontMockOnceIf(urlOrPredicate: UrlOrPredicate, fn: MockResponseInitFunction): FetchMock;
+    dontMockOnceIf(urlOrPredicate: UrlOrPredicate, fn?: MockResponseInitFunction): FetchMock;
     dontMockOnceIf(urlOrPredicate: UrlOrPredicate, response: string, responseInit?: MockParams): FetchMock;
 
     resetMocks(): void;
