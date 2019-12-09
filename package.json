@@ -36,13 +36,25 @@
     "babel-preset-env": "^1.7.0",
     "dtslint": "^0.3.0",
     "jest": "^23.5.0",
+    "prettier": "^1.18.2",
     "regenerator-runtime": "^0.12.1",
     "typescript": "^3.2.1"
   },
   "prettier": {
     "semi": false,
     "editor.formatOnSave": true,
-    "singleQuote": true
+    "singleQuote": true,
+    "overrides": [
+      {
+        "files": "**/*.ts",
+        "options": {
+          "semi": true,
+          "tabWidth": 4,
+          "singleQuote": false,
+          "printWidth": 120
+        }
+      }
+    ]
   },
   "jest": {
     "automock": false,

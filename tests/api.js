@@ -22,8 +22,10 @@ export function APIRequest2(who) {
   }
 }
 
-export function request() {
-  return fetch('https://randomuser.me/api', {})
+export const defaultRequestUri = 'https://randomuser.me/api'
+
+export function request(uri = defaultRequestUri) {
+  return fetch(uri, {})
     .then(response => {
       const contentType = response.headers.get('content-type')
 
