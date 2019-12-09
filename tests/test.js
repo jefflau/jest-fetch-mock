@@ -108,20 +108,22 @@ describe('Mocking aborts', () => {
     jest.useRealTimers()
   })
 
-  it('rejects with an Aborted! Error', () => {
+  it('rejects with an AbortError', () => {
     fetch.mockAbort()
-    expect(fetch('/')).rejects.toThrow('Aborted!')
+    expect(fetch('/')).rejects.toThrow('The operation was aborted')
   })
-  it('rejects with an Aborted! Error once then mocks with empty response', async () => {
+  it('rejects with an AbortError once then mocks with empty response', async () => {
     fetch.mockAbortOnce()
-    await expect(fetch('/')).rejects.toThrow('Aborted!')
+    await expect(fetch('/')).rejects.toThrow('The operation was aborted')
     await expect(request()).resolves.toEqual('')
   })
 
   it('throws when passed an already aborted abort signal', () => {
     const c = new AbortController()
     c.abort()
-    expect(() => fetch('/', { signal: c.signal })).toThrow('Aborted!')
+    expect(() => fetch('/', { signal: c.signal })).toThrow(
+      'The operation was aborted'
+    )
   })
 
   it('rejects when aborted before resolved', async () => {
@@ -131,7 +133,9 @@ describe('Mocking aborts', () => {
       return ''
     })
     setTimeout(() => c.abort(), 50)
-    await expect(fetch('/', { signal: c.signal })).rejects.toThrow('Aborted!')
+    await expect(fetch('/', { signal: c.signal })).rejects.toThrow(
+      'The operation was aborted'
+    )
   })
 })
 

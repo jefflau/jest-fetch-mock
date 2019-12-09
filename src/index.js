@@ -75,7 +75,8 @@ const isFn = unknown => typeof unknown === 'function'
 
 const isMocking = jest.fn(() => true)
 
-const abortError = () => new Error('Aborted!')
+const abortError = () =>
+  new DOMException('The operation was aborted. ', 'AbortError')
 
 const abort = () => {
   throw abortError()
