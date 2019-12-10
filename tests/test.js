@@ -1,5 +1,4 @@
-import { APIRequest, APIRequest2, defaultRequestUri, request } from './api'
-import { Request } from 'cross-fetch'
+const { APIRequest, APIRequest2, defaultRequestUri, request } = require('./api')
 
 describe('testing mockResponse and alias once', () => {
   beforeEach(() => {

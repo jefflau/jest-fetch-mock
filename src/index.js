@@ -40,7 +40,7 @@ function responseInit(resp, init) {
   if (typeof resp.init === 'object') {
     return resp.init
   } else {
-    const init = Object.assign({}, init || {})
+    init = Object.assign({}, init || {})
     for (const field of ['status', 'statusText', 'headers', 'url']) {
       if (field in resp) {
         init[field] = resp[field]
@@ -111,11 +111,7 @@ const normalizeRequest = (input, reqInit) => {
     if (reqInit && reqInit.signal && reqInit.signal.aborted) {
       abort()
     }
-    const request = new Request(input, reqInit)
-    if (reqInit && reqInit.signal) {
-      request.signal = reqInit.signal
-    }
-    return request
+    return new Request(input, reqInit)
   } else {
     throw new TypeError('Unable to parse input as string or Request')
   }
