@@ -100,27 +100,28 @@ describe('testing mockResponses', () => {
 describe('Mocking aborts', () => {
   beforeEach(() => {
     fetch.resetMocks()
-    fetch.doMock()
     jest.useFakeTimers()
   })
   afterEach(() => {
     jest.useRealTimers()
   })
 
-  it('rejects with an Aborted! Error', () => {
+  it('rejects with a dom exception', () => {
     fetch.mockAbort()
-    expect(fetch('/')).rejects.toThrow('Aborted!')
+    expect(fetch('/')).rejects.toThrow(expect.any(DOMException))
   })
-  it('rejects with an Aborted! Error once then mocks with empty response', async () => {
+  it('rejects once then mocks with empty response', async () => {
     fetch.mockAbortOnce()
-    await expect(fetch('/')).rejects.toThrow('Aborted!')
+    await expect(fetch('/')).rejects.toThrow(expect.any(DOMException))
     await expect(request()).resolves.toEqual('')
   })
 
-  it('throws when passed an already aborted abort signal', () => {
+  it('throws when passed an already aborted abort signal in the request init', () => {
     const c = new AbortController()
     c.abort()
-    expect(() => fetch('/', { signal: c.signal })).toThrow('Aborted!')
+    expect(() => fetch('/', { signal: c.signal })).toThrow(
+      expect.any(DOMException)
+    )
   })
 
   it('rejects when aborted before resolved', async () => {
@@ -130,7 +131,9 @@ describe('Mocking aborts', () => {
       return ''
     })
     setTimeout(() => c.abort(), 50)
-    await expect(fetch('/', { signal: c.signal })).rejects.toThrow('Aborted!')
+    await expect(fetch('/', { signal: c.signal })).rejects.toThrow(
+      expect.any(DOMException)
+    )
   })
 })
 

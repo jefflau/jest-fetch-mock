@@ -12,7 +12,7 @@ if (!Promise) {
 
 const ActualResponse = Response
 
-function ResponseWrapper(body, init) {
+function responseWrapper(body, init) {
   if (
     body &&
     typeof body.constructor === 'function' &&
@@ -75,7 +75,8 @@ const isFn = unknown => typeof unknown === 'function'
 
 const isMocking = jest.fn(() => true)
 
-const abortError = () => new Error('Aborted!')
+const abortError = () =>
+  new DOMException('The operation was aborted. ', 'AbortError')
 
 const abort = () => {
   throw abortError()
@@ -94,10 +95,16 @@ const normalizeResponse = (bodyOrFunction, init) => (input, reqInit) => {
             abort()
           }
           return typeof resp === 'string'
-            ? new ResponseWrapper(resp, init)
-            : new ResponseWrapper(resp.body, responseInit(resp, init))
+            ? responseWrapper(resp, init)
+            : responseWrapper(resp.body, responseInit(resp, init))
         })
-      : Promise.resolve(new ResponseWrapper(bodyOrFunction, init))
+      : new Promise((resolve, reject) => {
+          if (request.signal && request.signal.aborted) {
+            reject(abortError())
+            return
+          }
+          resolve(responseWrapper(bodyOrFunction, init))
+        })
     : crossFetch.fetch(input, reqInit)
 }
 
@@ -124,7 +131,7 @@ const normalizeError = errorOrFunction =>
 
 const fetch = jest.fn(normalizeResponse(''))
 fetch.Headers = Headers
-fetch.Response = ResponseWrapper
+fetch.Response = responseWrapper
 fetch.Request = Request
 fetch.mockResponse = (bodyOrFunction, init) =>
   fetch.mockImplementation(normalizeResponse(bodyOrFunction, init))
