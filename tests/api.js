@@ -1,6 +1,6 @@
-import 'cross-fetch/polyfill'
+require('cross-fetch/polyfill')
 
-export async function APIRequest(who) {
+async function APIRequest(who) {
   if (who === 'facebook') {
     const call1 = fetch('https://facebook.com/someOtherResource').then(res =>
       res.json()
@@ -14,7 +14,7 @@ export async function APIRequest(who) {
   }
 }
 
-export function APIRequest2(who) {
+function APIRequest2(who) {
   if (who === 'google') {
     return fetch('https://google.com').then(res => res.json())
   } else {
@@ -22,8 +22,10 @@ export function APIRequest2(who) {
   }
 }
 
-export function request() {
-  return fetch('https://randomuser.me/api', {})
+const defaultRequestUri = 'https://randomuser.me/api'
+
+function request(uri = defaultRequestUri) {
+  return fetch(uri, {})
     .then(response => {
       const contentType = response.headers.get('content-type')
 
@@ -45,4 +47,11 @@ export function request() {
       const errorData = JSON.parse(error)
       throw new Error(errorData.error)
     })
+}
+
+module.exports = {
+  request,
+  APIRequest,
+  APIRequest2,
+  defaultRequestUri
 }

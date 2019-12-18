@@ -12,7 +12,7 @@ if (!Promise) {
 
 const ActualResponse = Response
 
-function ResponseWrapper(body, init) {
+function responseWrapper(body, init) {
   if (
     body &&
     typeof body.constructor === 'function' &&
@@ -36,42 +36,220 @@ function ResponseWrapper(body, init) {
   return new ActualResponse(body, init)
 }
 
+function responseInit(resp, init) {
+  if (typeof resp.init === 'object') {
+    return resp.init
+  } else {
+    init = Object.assign({}, init || {})
+    for (const field of ['status', 'statusText', 'headers', 'url']) {
+      if (field in resp) {
+        init[field] = resp[field]
+      }
+    }
+    return init
+  }
+}
+
+function requestMatches(urlOrPredicate) {
+  if (typeof urlOrPredicate === 'function') {
+    return urlOrPredicate
+  }
+  const predicate =
+    urlOrPredicate instanceof RegExp
+      ? input => urlOrPredicate.exec(input) !== null
+      : input => input === urlOrPredicate
+  return input => {
+    const requestUrl = typeof input === 'object' ? input.url : input
+    return predicate(requestUrl)
+  }
+}
+
+function requestNotMatches(urlOrPredicate) {
+  const matches = requestMatches(urlOrPredicate)
+  return input => {
+    return !matches(input)
+  }
+}
+
 const isFn = unknown => typeof unknown === 'function'
 
-const normalizeResponse = (bodyOrFunction, init) => () => isFn(bodyOrFunction) ?
-    bodyOrFunction().then(({body, init}) => new ResponseWrapper(body, init)) :
-    Promise.resolve(new ResponseWrapper(bodyOrFunction, init))
+const isMocking = jest.fn(() => true)
 
-const normalizeError = errorOrFunction =>  isFn(errorOrFunction) ?
-  errorOrFunction :
-  () => Promise.reject(errorOrFunction)
+const abortError = () =>
+  new DOMException('The operation was aborted. ', 'AbortError')
 
-const fetch = jest.fn()
+const abort = () => {
+  throw abortError()
+}
+
+const abortAsync = () => {
+  return Promise.reject(abortError())
+}
+
+const normalizeResponse = (bodyOrFunction, init) => (input, reqInit) => {
+  const request = normalizeRequest(input, reqInit)
+  return isMocking(input, reqInit)
+    ? isFn(bodyOrFunction)
+      ? bodyOrFunction(request).then(resp => {
+          if (request.signal && request.signal.aborted) {
+            abort()
+          }
+          return typeof resp === 'string'
+            ? responseWrapper(resp, init)
+            : responseWrapper(resp.body, responseInit(resp, init))
+        })
+      : new Promise((resolve, reject) => {
+          if (request.signal && request.signal.aborted) {
+            reject(abortError())
+            return
+          }
+          resolve(responseWrapper(bodyOrFunction, init))
+        })
+    : crossFetch.fetch(input, reqInit)
+}
+
+const normalizeRequest = (input, reqInit) => {
+  if (input instanceof Request) {
+    if (input.signal && input.signal.aborted) {
+      abort()
+    }
+    return input
+  } else if (typeof input === 'string') {
+    if (reqInit && reqInit.signal && reqInit.signal.aborted) {
+      abort()
+    }
+    return new Request(input, reqInit)
+  } else {
+    throw new TypeError('Unable to parse input as string or Request')
+  }
+}
+
+const normalizeError = errorOrFunction =>
+  isFn(errorOrFunction)
+    ? errorOrFunction
+    : () => Promise.reject(errorOrFunction)
+
+const fetch = jest.fn(normalizeResponse(''))
 fetch.Headers = Headers
-fetch.Response = ResponseWrapper
+fetch.Response = responseWrapper
 fetch.Request = Request
-fetch.mockResponse = (bodyOrFunction, init) => fetch.mockImplementation(normalizeResponse(bodyOrFunction, init))
+fetch.mockResponse = (bodyOrFunction, init) =>
+  fetch.mockImplementation(normalizeResponse(bodyOrFunction, init))
 
-fetch.mockReject = errorOrFunction => fetch.mockImplementation(normalizeError(errorOrFunction))
+fetch.mockReject = errorOrFunction =>
+  fetch.mockImplementation(normalizeError(errorOrFunction))
 
-const mockResponseOnce = (bodyOrFunction, init) => fetch.mockImplementationOnce(normalizeResponse(bodyOrFunction, init))
+fetch.mockAbort = () => fetch.mockImplementation(abortAsync)
+fetch.mockAbortOnce = () => fetch.mockImplementationOnce(abortAsync)
+
+const mockResponseOnce = (bodyOrFunction, init) =>
+  fetch.mockImplementationOnce(normalizeResponse(bodyOrFunction, init))
 
 fetch.mockResponseOnce = mockResponseOnce
 
 fetch.once = mockResponseOnce
 
-fetch.mockRejectOnce = errorOrFunction => fetch.mockImplementationOnce(normalizeError(errorOrFunction))
+fetch.mockRejectOnce = errorOrFunction =>
+  fetch.mockImplementationOnce(normalizeError(errorOrFunction))
 
 fetch.mockResponses = (...responses) => {
-  responses.forEach(([bodyOrFunction, init]) => fetch.mockImplementationOnce(normalizeResponse(bodyOrFunction, init)))
+  responses.forEach(response => {
+    if (Array.isArray(response)) {
+      const [body, init] = response
+      fetch.mockImplementationOnce(normalizeResponse(body, init))
+    } else {
+      fetch.mockImplementationOnce(normalizeResponse(response))
+    }
+  })
+  return fetch
+}
+
+fetch.isMocking = isMocking
+
+fetch.mockIf = (urlOrPredicate, bodyOrFunction, init) => {
+  isMocking.mockImplementation(requestMatches(urlOrPredicate))
+  if (bodyOrFunction) {
+    fetch.mockResponse(bodyOrFunction, init)
+  }
+  return fetch
+}
+
+fetch.dontMockIf = (urlOrPredicate, bodyOrFunction, init) => {
+  isMocking.mockImplementation(requestNotMatches(urlOrPredicate))
+  if (bodyOrFunction) {
+    fetch.mockResponse(bodyOrFunction, init)
+  }
+  return fetch
+}
+
+fetch.mockOnceIf = (urlOrPredicate, bodyOrFunction, init) => {
+  isMocking.mockImplementationOnce(requestMatches(urlOrPredicate))
+  if (bodyOrFunction) {
+    mockResponseOnce(bodyOrFunction, init)
+  }
+  return fetch
+}
+
+fetch.dontMockOnceIf = (urlOrPredicate, bodyOrFunction, init) => {
+  isMocking.mockImplementationOnce(requestNotMatches(urlOrPredicate))
+  if (bodyOrFunction) {
+    mockResponseOnce(bodyOrFunction, init)
+  }
+  return fetch
+}
+
+fetch.dontMock = () => {
+  isMocking.mockImplementation(() => false)
+  return fetch
+}
+
+fetch.dontMockOnce = () => {
+  isMocking.mockImplementationOnce(() => false)
+  return fetch
+}
+
+fetch.doMock = (bodyOrFunction, init) => {
+  isMocking.mockImplementation(() => true)
+  if (bodyOrFunction) {
+    fetch.mockResponse(bodyOrFunction, init)
+  }
+  return fetch
+}
+
+fetch.doMockOnce = (bodyOrFunction, init) => {
+  isMocking.mockImplementationOnce(() => true)
+  if (bodyOrFunction) {
+    mockResponseOnce(bodyOrFunction, init)
+  }
   return fetch
 }
 
 fetch.resetMocks = () => {
   fetch.mockReset()
+  isMocking.mockReset()
+
+  // reset to default implementation with each reset
+  fetch.mockImplementation(normalizeResponse(''))
+  fetch.doMock()
+  fetch.isMocking = isMocking
 }
 
-// Default mock is just a empty string.
-fetch.mockResponse('')
+fetch.enableMocks = () => {
+  global.fetchMock = global.fetch = fetch
+  try {
+    jest.setMock('node-fetch', fetch)
+  } catch (error) {
+    //ignore
+  }
+}
+
+fetch.disableMocks = () => {
+  global.fetch = crossFetch
+  try {
+    jest.dontMock('node-fetch')
+  } catch (error) {
+    //ignore
+  }
+}
 
 module.exports = fetch
