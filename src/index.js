@@ -166,7 +166,7 @@ fetch.mockResponses = (...responses) => {
 
 fetch.isMocking = isMocking
 
-fetch.mockIf = (urlOrPredicate, bodyOrFunction, init) => {
+fetch.doMockIf = (urlOrPredicate, bodyOrFunction, init) => {
   isMocking.mockImplementation(requestMatches(urlOrPredicate))
   if (bodyOrFunction) {
     fetch.mockResponse(bodyOrFunction, init)
@@ -182,7 +182,7 @@ fetch.dontMockIf = (urlOrPredicate, bodyOrFunction, init) => {
   return fetch
 }
 
-fetch.mockOnceIf = (urlOrPredicate, bodyOrFunction, init) => {
+fetch.doMockOnceIf = (urlOrPredicate, bodyOrFunction, init) => {
   isMocking.mockImplementationOnce(requestMatches(urlOrPredicate))
   if (bodyOrFunction) {
     mockResponseOnce(bodyOrFunction, init)
