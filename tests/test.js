@@ -414,22 +414,22 @@ describe('conditional mocking', () => {
 
   describe('mockIf', () => {
     it("doesn't mock normally", async () => {
-      fetch.mockIf('http://foo')
+      fetch.doMockIf('http://foo')
       await expectUnmocked()
       await expectUnmocked()
     })
     it('mocks when matches string', async () => {
-      fetch.mockIf(testUrl)
+      fetch.doMockIf(testUrl)
       await expectMocked()
       await expectMocked()
     })
     it('mocks when matches regex', async () => {
-      fetch.mockIf(new RegExp(testUrl))
+      fetch.doMockIf(new RegExp(testUrl))
       await expectMocked()
       await expectMocked()
     })
     it('mocks when matches predicate', async () => {
-      fetch.mockIf(input => input === testUrl)
+      fetch.doMockIf(input => input === testUrl)
       await expectMocked()
       await expectMocked()
     })
@@ -460,7 +460,7 @@ describe('conditional mocking', () => {
 
   describe('mockOnceIf (default mocked)', () => {
     it("doesn't mock normally", async () => {
-      fetch.mockOnceIf('http://foo')
+      fetch.doMockOnceIf('http://foo')
       await expectUnmocked()
       await expectMocked()
     })
@@ -468,19 +468,19 @@ describe('conditional mocking', () => {
       const response = 'blah'
       const response2 = 'blah2'
       fetch
-        .mockOnceIf('http://foo', response)
-        .mockOnceIf('http://foo2', response2)
+        .doMockOnceIf('http://foo', response)
+        .doMockOnceIf('http://foo2', response2)
       await expectMocked('http://foo', response)
       await expectMocked('http://foo2', response2)
       //await expectMocked('http://foo3', mockedDefaultResponse)
     })
     it('mocks when matches regex', async () => {
-      fetch.mockOnceIf(new RegExp(testUrl))
+      fetch.doMockOnceIf(new RegExp(testUrl))
       await expectMocked()
       await expectMocked()
     })
     it('mocks when matches predicate', async () => {
-      fetch.mockOnceIf(input => input === testUrl)
+      fetch.doMockOnceIf(input => input === testUrl)
       await expectMocked()
       await expectMocked()
     })
@@ -514,22 +514,22 @@ describe('conditional mocking', () => {
       fetch.dontMock()
     })
     it("doesn't mock normally", async () => {
-      fetch.mockOnceIf('http://foo')
+      fetch.doMockOnceIf('http://foo')
       await expectUnmocked()
       await expectUnmocked()
     })
     it('mocks when matches string', async () => {
-      fetch.mockOnceIf(testUrl)
+      fetch.doMockOnceIf(testUrl)
       await expectMocked()
       await expectUnmocked()
     })
     it('mocks when matches regex', async () => {
-      fetch.mockOnceIf(new RegExp(testUrl))
+      fetch.doMockOnceIf(new RegExp(testUrl))
       await expectMocked()
       await expectUnmocked()
     })
     it('mocks when matches predicate', async () => {
-      fetch.mockOnceIf(input => input === testUrl)
+      fetch.doMockOnceIf(input => input === testUrl)
       await expectMocked()
       await expectUnmocked()
     })
@@ -611,7 +611,7 @@ describe('conditional mocking', () => {
         fetch
           // .doMock()    // the default - here for clarify
           .dontMockOnceIf(alternativeUrl)
-          .mockOnceIf(alternativeUrl)
+          .doMockOnceIf(alternativeUrl)
           .doMockOnce()
           .dontMockOnce()
       })
@@ -646,7 +646,7 @@ describe('conditional mocking', () => {
         fetch
           .dontMock()
           .dontMockOnceIf(alternativeUrl)
-          .mockOnceIf(alternativeUrl)
+          .doMockOnceIf(alternativeUrl)
           .doMockOnce()
           .dontMockOnce()
       })
@@ -676,12 +676,12 @@ describe('conditional mocking', () => {
       })
     })
 
-    describe('mockIf(alternativeUrl)', () => {
+    describe('doMockIf(alternativeUrl)', () => {
       beforeEach(() => {
         fetch
-          .mockIf(alternativeUrl)
+          .doMockIf(alternativeUrl)
           .dontMockOnceIf(alternativeUrl)
-          .mockOnceIf(alternativeUrl)
+          .doMockOnceIf(alternativeUrl)
           .doMockOnce()
           .dontMockOnce()
       })
@@ -716,7 +716,7 @@ describe('conditional mocking', () => {
         fetch
           .dontMockIf(alternativeUrl)
           .dontMockOnceIf(alternativeUrl)
-          .mockOnceIf(alternativeUrl)
+          .doMockOnceIf(alternativeUrl)
           .doMockOnce()
           .dontMockOnce()
       })
