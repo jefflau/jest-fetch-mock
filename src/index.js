@@ -76,7 +76,7 @@ const isFn = unknown => typeof unknown === 'function'
 const isMocking = jest.fn(() => true)
 
 const abortError = () =>
-  new DOMException('The operation was aborted. ', 'AbortError')
+  new DOMException('The operation was aborted.', 'AbortError')
 
 const abort = () => {
   throw abortError()
@@ -120,7 +120,7 @@ const normalizeRequest = (input, reqInit) => {
     }
     return new Request(input, reqInit)
   } else {
-    throw new TypeError('Unable to parse input as string or Request')
+    throw new TypeError('Unable to parse input as string or Request.')
   }
 }
 
