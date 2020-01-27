@@ -87,3 +87,5 @@ export type ErrorOrFunction = Error | ((...args: any[]) => Promise<any>);
 export type UrlOrPredicate = string | RegExp | ((input: Request) => boolean);
 
 export type MockResponseInitFunction = (request: Request) => Promise<MockResponseInit | string>;
+
+export default FetchMock;
