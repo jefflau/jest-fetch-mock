@@ -61,27 +61,46 @@ require('jest-fetch-mock').enableMocks()
 // changes default behavior of fetchMock to use the real 'fetch' implementation and not mock responses
 fetchMock.dontMock() 
 ```
-
-Then in a given test, to enable mocking for a specific URL only:
+If you want a single test file to return to the default behavior of mocking all responses, add the following to the
+test file:
 ```js
-fetchMock.doMockIf(/^https?:\/\/example.com.*$/, req => {
-  if (req.url.endsWith("/path1")) {
-    return "some response body"
-  } else if (req.url.endsWith("/path2")) {
-    return {
-      body: "another response body",
-      headers: {
-        "X-Some-Response-Header": "Some header value"
-      } 
-    }
-  } else {
-    return {
-      status: 404,
-      body: "Not Found"
-    }
-  }
+beforeEach(() => { // if you have an existing `beforeEach` just add the following line to it
+  fetchMock.doMock()
 })
 ```
+
+To enable mocking for a specific URL only:
+```js
+beforeEach(() => { // if you have an existing `beforeEach` just add the following lines to it
+  fetchMock.mockIf(/^https?:\/\/example.com.*$/, req => {
+      if (req.url.endsWith("/path1")) {
+        return "some response body"
+      } else if (req.url.endsWith("/path2")) {
+        return {
+          body: "another response body",
+          headers: {
+            "X-Some-Response-Header": "Some header value"
+          } 
+        }
+      } else {
+        return {
+          status: 404,
+          body: "Not Found"
+        }
+      }
+  })
+})
+```
+
+If you have changed the default behavior to use the real implementation, you can guarantee the next call to fetch
+will be mocked by using the `mockOnce` function:
+```js
+fetchMock.mockOnce("the next call to fetch will always return this as the body")
+```
+
+This function behaves exactly like `fetchMock.once` but guarantees the next call to `fetch` will be mocked even if the 
+default behavior of fetchMock is to use the real implementation.  You can safely convert all you `fetchMock.once` calls
+to `fetchMock.mockOnce` without a risk of changing their behavior.
 
 ### To setup for an individual test
 
@@ -665,12 +684,12 @@ Calling `fetch.resetMocks()` will return to the default behavior of mocking all 
 - `fetch.dontMock()` - Change the default behavior to not mock any fetches until `fetch.resetMocks()` or `fetch.doMock()` is called
 - `fetch.doMock(bodyOrFunction?, responseInit?)` - Reverses `fetch.dontMock()`. This is the default state after `fetch.resetMocks()`
 - `fetch.dontMockOnce()` - For the next fetch, do not mock then return to the default behavior for subsequent fetches. Can be chained.
-- `fetch.doMockOnce(bodyOrFunction?, responseInit?)` - For the next fetch, mock the response then return to the default behavior for subsequent fetches. Can be chained.
-- `fetch.doMockIf(urlOrPredicate, bodyOrFunction?, responseInit?):fetch` - causes all fetches to be not be mocked unless they match the given string/RegExp/predicate
+- `fetch.doMockOnce(bodyOrFunction?, responseInit?)` or `fetch.mockOnce` - For the next fetch, mock the response then return to the default behavior for subsequent fetches. Can be chained.
+- `fetch.doMockIf(urlOrPredicate, bodyOrFunction?, responseInit?):fetch` or `fetch.mockIf` - causes all fetches to be not be mocked unless they match the given string/RegExp/predicate
   (i.e. "only mock 'fetch' if the request is for the given URL otherwise, use the real fetch implementation")
 - `fetch.dontMockIf(urlOrPredicate, bodyOrFunction?, responseInit?):fetch` - causes all fetches to be mocked unless they match the given string/RegExp/predicate
   (i.e. "don't mock 'fetch' if the request is for the given URL, otherwise mock the request")
-- `fetch.doMockOnceIf(urlOrPredicate, bodyOrFunction?, responseInit?):fetch` - causes the next fetch to be mocked if it matches the given string/RegExp/predicate. Can be chained.
+- `fetch.doMockOnceIf(urlOrPredicate, bodyOrFunction?, responseInit?):fetch` or `fetch.mockOnceIf` - causes the next fetch to be mocked if it matches the given string/RegExp/predicate. Can be chained.
   (i.e. "only mock 'fetch' if the next request is for the given URL otherwise, use the default behavior")
 - `fetch.dontMockOnceIf(urlOrPredicate):fetch` - causes the next fetch to be not be mocked if it matches the given string/RegExp/predicate. Can be chained.
   (i.e. "don't mock 'fetch' if the next request is for the given URL, otherwise use the default behavior")
