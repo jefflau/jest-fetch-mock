@@ -22,7 +22,7 @@ It currently supports the mocking with the [`cross-fetch`](https://www.npmjs.com
 
 ## Usage
 
-### Installation and Setup
+### Package Installation
 
 To setup your fetch mock you need to do the following things:
 
@@ -31,6 +31,8 @@ $ npm install --save-dev jest-fetch-mock
 ```
 
 Create a `setupJest` file to setup the mock or add this to an existing `setupFile`. :
+
+### To setup for all tests
 
 ```js
 //setupJest.js or similar file
@@ -50,13 +52,62 @@ Add the setupFile to your jest config in `package.json`:
 
 With this done, you'll have `fetch` and `fetchMock` available on the global scope. Fetch will be used as usual by your code and you'll use `fetchMock` in your tests
 
-### TypeScript guide
+#### Default not mocked
+
+If you would like to have the 'fetchMock' available in all tests but not enabled then add `fetchMock.dontMock()` after the `...enableMocks()` line in `setupJest.js`:
+```js
+// adds the 'fetchMock' global variable and rewires 'fetch' global to call 'fetchMock' instead of the real implementation
+require('jest-fetch-mock').enableMocks()
+// changes default behavior of fetchMock to use the real 'fetch' implementation and not mock responses
+fetchMock.dontMock() 
+```
+
+Then in a given test, to enable mocking for a specific URL only:
+```js
+fetchMock.doMockIf(/^https?:\/\/example.com.*$/, req => {
+  if (req.url.endsWith("/path1")) {
+    return "some response body"
+  } else if (req.url.endsWith("/path2")) {
+    return {
+      body: "another response body",
+      headers: {
+        "X-Some-Response-Header": "Some header value"
+      } 
+    }
+  } else {
+    return {
+      status: 404,
+      body: "Not Found"
+    }
+  }
+})
+```
+
+### To setup for an individual test
+
+For JavaScript add the following line to the start of your test case (before any other requires)
+```js
+require('jest-fetch-mock').enableMocks()
+```
+
+For TypeScript/ES6 add the following lines to the start of your test case (before any other imports)
+```typescript
+import { enableFetchMocks } from 'jest-fetch-mock'
+enableFetchMocks()
+```
+
+#### TypeScript importing
 
 If you are using TypeScript and receive errors about the `fetchMock` global not existing,
 add a `global.d.ts` file to the root of your project (or add the following line to an existing global file):
 
 ```typescript
 import 'jest-fetch-mock'
+```
+
+If you prefer you can also just import the fetchMock in a test case.
+```typescript
+import fetchMock from "jest-fetch-mock"
 ```
 
 You may also need to edit your `tsconfig.json` and add "dom" and/or "es2015" and/or "esnext" to the 'compilerConfig.lib' property
@@ -601,7 +652,7 @@ describe('testing timeouts', () => {
 
 In some test scenarios, you may want to temporarily disable (or enable) mocking for all requests or the next (or a certain number of) request(s).
 You may want to only mock fetch requests to some URLs that match a given request path while in others you may want to mock
-all request except those matching a given request path. You may even want to conditionally mock based on request headers.
+all requests except those matching a given request path. You may even want to conditionally mock based on request headers.
 
 The conditional mock functions cause `jest-fetch-mock` to pass fetches through to the concrete fetch implementation conditionally.
 Calling `fetch.dontMock`, `fetch.doMock`, `fetch.doMockIf` or `fetch.dontMockIf` overrides the default behavior

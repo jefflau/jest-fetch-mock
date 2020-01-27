@@ -1,4 +1,4 @@
-import { MockResponseInit } from 'jest-fetch-mock';
+import fm, { enableFetchMocks, disableFetchMocks, MockResponseInit } from 'jest-fetch-mock';
 
 fetchMock.mockResponse(JSON.stringify({foo: "bar"}));
 fetchMock.mockResponse(JSON.stringify({foo: "bar"}), {
@@ -84,3 +84,12 @@ async function someAsyncHandler(): Promise<MockResponseInit> {
 async function someAsyncStringHandler(): Promise<string> {
     return JSON.stringify({foo: "bar"});
 }
+
+enableFetchMocks();
+disableFetchMocks();
+fm.enableMocks();
+fm.disableMocks();
+fm.doMock();
+fm.dontMock();
+fm.doMockOnce();
+fm.dontMockOnce();

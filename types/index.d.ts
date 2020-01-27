@@ -87,3 +87,12 @@ export type ErrorOrFunction = Error | ((...args: any[]) => Promise<any>);
 export type UrlOrPredicate = string | RegExp | ((input: Request) => boolean);
 
 export type MockResponseInitFunction = (request: Request) => Promise<MockResponseInit | string>;
+
+// alias of fetchMock.enableMocks() for ES6 import syntax to not clash with other libraries
+export function enableFetchMocks(): void;
+// alias of fetchMock.disableMocks() for ease of ES6 import syntax to not clash with other libraries
+export function disableFetchMocks(): void;
+
+declare const fetchMock: FetchMock;
+
+export default fetchMock;

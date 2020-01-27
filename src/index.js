@@ -234,7 +234,7 @@ fetch.resetMocks = () => {
   fetch.isMocking = isMocking
 }
 
-fetch.enableMocks = () => {
+fetch.enableMocks = fetch.enableFetchMocks = () => {
   global.fetchMock = global.fetch = fetch
   try {
     jest.setMock('node-fetch', fetch)
@@ -243,7 +243,7 @@ fetch.enableMocks = () => {
   }
 }
 
-fetch.disableMocks = () => {
+fetch.disableMocks = fetch.disableFetchMocks = () => {
   global.fetch = crossFetch
   try {
     jest.dontMock('node-fetch')
@@ -252,4 +252,4 @@ fetch.disableMocks = () => {
   }
 }
 
-module.exports = fetch
+module.exports = fetch.default = fetch
