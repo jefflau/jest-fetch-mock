@@ -1,4 +1,4 @@
-import { MockResponseInit } from 'jest-fetch-mock';
+import fm, { enableFetchMocks, disableFetchMocks, MockResponseInit } from 'jest-fetch-mock';
 
 fetchMock.mockResponse(JSON.stringify({foo: "bar"}));
 fetchMock.mockResponse(JSON.stringify({foo: "bar"}), {
@@ -59,12 +59,18 @@ fetchMock.isMocking(new Request("http://bang"));
 fetchMock.doMockIf('http://foo');
 fetchMock.doMockIf(/bar/);
 fetchMock.doMockIf((input: Request|string) => true);
+fetchMock.mockIf('http://foo');
+fetchMock.mockIf(/bar/);
+fetchMock.mockIf((input: Request|string) => true);
 fetchMock.dontMockIf('http://foo');
 fetchMock.dontMockIf(/bar/);
 fetchMock.dontMockIf((input: Request|string) => true);
 fetchMock.doMockOnceIf('http://foo');
 fetchMock.doMockOnceIf(/bar/);
 fetchMock.doMockOnceIf((input: Request|string) => true);
+fetchMock.mockOnceIf('http://foo');
+fetchMock.mockOnceIf(/bar/);
+fetchMock.mockOnceIf((input: Request|string) => true);
 fetchMock.dontMockOnceIf('http://foo');
 fetchMock.dontMockOnceIf(/bar/);
 fetchMock.dontMockOnceIf((input: Request|string) => true);
@@ -73,6 +79,7 @@ fetchMock.doMock();
 fetchMock.dontMock();
 fetchMock.doMockOnce();
 fetchMock.dontMockOnce();
+fetchMock.mockOnce();
 
 async function someAsyncHandler(): Promise<MockResponseInit> {
     return {
@@ -84,3 +91,13 @@ async function someAsyncHandler(): Promise<MockResponseInit> {
 async function someAsyncStringHandler(): Promise<string> {
     return JSON.stringify({foo: "bar"});
 }
+
+enableFetchMocks();
+disableFetchMocks();
+fm.enableMocks();
+fm.disableMocks();
+fm.doMock();
+fm.dontMock();
+fm.doMockOnce();
+fm.dontMockOnce();
+fm.mockOnce();

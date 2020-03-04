@@ -22,7 +22,7 @@ It currently supports the mocking with the [`cross-fetch`](https://www.npmjs.com
 
 ## Usage
 
-### Installation and Setup
+### Package Installation
 
 To setup your fetch mock you need to do the following things:
 
@@ -31,6 +31,8 @@ $ npm install --save-dev jest-fetch-mock
 ```
 
 Create a `setupJest` file to setup the mock or add this to an existing `setupFile`. :
+
+### To setup for all tests
 
 ```js
 //setupJest.js or similar file
@@ -50,13 +52,81 @@ Add the setupFile to your jest config in `package.json`:
 
 With this done, you'll have `fetch` and `fetchMock` available on the global scope. Fetch will be used as usual by your code and you'll use `fetchMock` in your tests
 
-### TypeScript guide
+#### Default not mocked
+
+If you would like to have the 'fetchMock' available in all tests but not enabled then add `fetchMock.dontMock()` after the `...enableMocks()` line in `setupJest.js`:
+```js
+// adds the 'fetchMock' global variable and rewires 'fetch' global to call 'fetchMock' instead of the real implementation
+require('jest-fetch-mock').enableMocks()
+// changes default behavior of fetchMock to use the real 'fetch' implementation and not mock responses
+fetchMock.dontMock() 
+```
+If you want a single test file to return to the default behavior of mocking all responses, add the following to the
+test file:
+```js
+beforeEach(() => { // if you have an existing `beforeEach` just add the following line to it
+  fetchMock.doMock()
+})
+```
+
+To enable mocking for a specific URL only:
+```js
+beforeEach(() => { // if you have an existing `beforeEach` just add the following lines to it
+  fetchMock.mockIf(/^https?:\/\/example.com.*$/, req => {
+      if (req.url.endsWith("/path1")) {
+        return "some response body"
+      } else if (req.url.endsWith("/path2")) {
+        return {
+          body: "another response body",
+          headers: {
+            "X-Some-Response-Header": "Some header value"
+          } 
+        }
+      } else {
+        return {
+          status: 404,
+          body: "Not Found"
+        }
+      }
+  })
+})
+```
+
+If you have changed the default behavior to use the real implementation, you can guarantee the next call to fetch
+will be mocked by using the `mockOnce` function:
+```js
+fetchMock.mockOnce("the next call to fetch will always return this as the body")
+```
+
+This function behaves exactly like `fetchMock.once` but guarantees the next call to `fetch` will be mocked even if the 
+default behavior of fetchMock is to use the real implementation.  You can safely convert all you `fetchMock.once` calls
+to `fetchMock.mockOnce` without a risk of changing their behavior.
+
+### To setup for an individual test
+
+For JavaScript add the following line to the start of your test case (before any other requires)
+```js
+require('jest-fetch-mock').enableMocks()
+```
+
+For TypeScript/ES6 add the following lines to the start of your test case (before any other imports)
+```typescript
+import { enableFetchMocks } from 'jest-fetch-mock'
+enableFetchMocks()
+```
+
+#### TypeScript importing
 
 If you are using TypeScript and receive errors about the `fetchMock` global not existing,
 add a `global.d.ts` file to the root of your project (or add the following line to an existing global file):
 
 ```typescript
 import 'jest-fetch-mock'
+```
+
+If you prefer you can also just import the fetchMock in a test case.
+```typescript
+import fetchMock from "jest-fetch-mock"
 ```
 
 You may also need to edit your `tsconfig.json` and add "dom" and/or "es2015" and/or "esnext" to the 'compilerConfig.lib' property
@@ -601,7 +671,7 @@ describe('testing timeouts', () => {
 
 In some test scenarios, you may want to temporarily disable (or enable) mocking for all requests or the next (or a certain number of) request(s).
 You may want to only mock fetch requests to some URLs that match a given request path while in others you may want to mock
-all request except those matching a given request path. You may even want to conditionally mock based on request headers.
+all requests except those matching a given request path. You may even want to conditionally mock based on request headers.
 
 The conditional mock functions cause `jest-fetch-mock` to pass fetches through to the concrete fetch implementation conditionally.
 Calling `fetch.dontMock`, `fetch.doMock`, `fetch.doMockIf` or `fetch.dontMockIf` overrides the default behavior
@@ -614,12 +684,12 @@ Calling `fetch.resetMocks()` will return to the default behavior of mocking all 
 - `fetch.dontMock()` - Change the default behavior to not mock any fetches until `fetch.resetMocks()` or `fetch.doMock()` is called
 - `fetch.doMock(bodyOrFunction?, responseInit?)` - Reverses `fetch.dontMock()`. This is the default state after `fetch.resetMocks()`
 - `fetch.dontMockOnce()` - For the next fetch, do not mock then return to the default behavior for subsequent fetches. Can be chained.
-- `fetch.doMockOnce(bodyOrFunction?, responseInit?)` - For the next fetch, mock the response then return to the default behavior for subsequent fetches. Can be chained.
-- `fetch.doMockIf(urlOrPredicate, bodyOrFunction?, responseInit?):fetch` - causes all fetches to be not be mocked unless they match the given string/RegExp/predicate
+- `fetch.doMockOnce(bodyOrFunction?, responseInit?)` or `fetch.mockOnce` - For the next fetch, mock the response then return to the default behavior for subsequent fetches. Can be chained.
+- `fetch.doMockIf(urlOrPredicate, bodyOrFunction?, responseInit?):fetch` or `fetch.mockIf` - causes all fetches to be not be mocked unless they match the given string/RegExp/predicate
   (i.e. "only mock 'fetch' if the request is for the given URL otherwise, use the real fetch implementation")
 - `fetch.dontMockIf(urlOrPredicate, bodyOrFunction?, responseInit?):fetch` - causes all fetches to be mocked unless they match the given string/RegExp/predicate
   (i.e. "don't mock 'fetch' if the request is for the given URL, otherwise mock the request")
-- `fetch.doMockOnceIf(urlOrPredicate, bodyOrFunction?, responseInit?):fetch` - causes the next fetch to be mocked if it matches the given string/RegExp/predicate. Can be chained.
+- `fetch.doMockOnceIf(urlOrPredicate, bodyOrFunction?, responseInit?):fetch` or `fetch.mockOnceIf` - causes the next fetch to be mocked if it matches the given string/RegExp/predicate. Can be chained.
   (i.e. "only mock 'fetch' if the next request is for the given URL otherwise, use the default behavior")
 - `fetch.dontMockOnceIf(urlOrPredicate):fetch` - causes the next fetch to be not be mocked if it matches the given string/RegExp/predicate. Can be chained.
   (i.e. "don't mock 'fetch' if the next request is for the given URL, otherwise use the default behavior")
