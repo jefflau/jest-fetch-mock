@@ -51,29 +51,35 @@ function responseInit(resp, init) {
 }
 
 function requestMatches(urlOrPredicate) {
-  if (typeof urlOrPredicate === 'function') {
-    return urlOrPredicate
-  }
   const predicate =
     urlOrPredicate instanceof RegExp
-      ? input => urlOrPredicate.exec(input) !== null
-      : input => input === urlOrPredicate
-  return input => {
-    const requestUrl = typeof input === 'object' ? input.url : input
-    return predicate(requestUrl)
+      ? input => urlOrPredicate.test(input.url)
+      : typeof urlOrPredicate === 'string'
+      ? input => input.url === urlOrPredicate
+      : urlOrPredicate
+  return (input, reqInit) => {
+    const req = normalizeRequest(input, reqInit)
+    return [predicate(req), req]
   }
 }
 
 function requestNotMatches(urlOrPredicate) {
   const matches = requestMatches(urlOrPredicate)
   return input => {
-    return !matches(input)
+    const result = matches(input)
+    return [!result[0], result[1]]
+  }
+}
+
+function staticMatches(value) {
+  return (input, reqInit) => {
+    return [value, normalizeRequest(input, reqInit)]
   }
 }
 
 const isFn = unknown => typeof unknown === 'function'
 
-const isMocking = jest.fn(() => true)
+const isMocking = jest.fn(staticMatches(true))
 
 const abortError = () =>
   new DOMException('The operation was aborted. ', 'AbortError')
@@ -87,8 +93,8 @@ const abortAsync = () => {
 }
 
 const normalizeResponse = (bodyOrFunction, init) => (input, reqInit) => {
-  const request = normalizeRequest(input, reqInit)
-  return isMocking(input, reqInit)
+  const [mocked, request] = isMocking(input, reqInit)
+  return mocked
     ? isFn(bodyOrFunction)
       ? bodyOrFunction(request).then(resp => {
           if (request.signal && request.signal.aborted) {
@@ -164,7 +170,7 @@ fetch.mockResponses = (...responses) => {
   return fetch
 }
 
-fetch.isMocking = isMocking
+fetch.isMocking = (req, reqInit) => isMocking(req, reqInit)[0]
 
 fetch.mockIf = fetch.doMockIf = (urlOrPredicate, bodyOrFunction, init) => {
   isMocking.mockImplementation(requestMatches(urlOrPredicate))
@@ -203,17 +209,17 @@ fetch.dontMockOnceIf = (urlOrPredicate, bodyOrFunction, init) => {
 }
 
 fetch.dontMock = () => {
-  isMocking.mockImplementation(() => false)
+  isMocking.mockImplementation(staticMatches(false))
   return fetch
 }
 
 fetch.dontMockOnce = () => {
-  isMocking.mockImplementationOnce(() => false)
+  isMocking.mockImplementationOnce(staticMatches(false))
   return fetch
 }
 
 fetch.doMock = (bodyOrFunction, init) => {
-  isMocking.mockImplementation(() => true)
+  isMocking.mockImplementation(staticMatches(true))
   if (bodyOrFunction) {
     fetch.mockResponse(bodyOrFunction, init)
   }
@@ -221,7 +227,7 @@ fetch.doMock = (bodyOrFunction, init) => {
 }
 
 fetch.mockOnce = fetch.doMockOnce = (bodyOrFunction, init) => {
-  isMocking.mockImplementationOnce(() => true)
+  isMocking.mockImplementationOnce(staticMatches(true))
   if (bodyOrFunction) {
     mockResponseOnce(bodyOrFunction, init)
   }

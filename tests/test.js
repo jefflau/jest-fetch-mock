@@ -429,7 +429,7 @@ describe('conditional mocking', () => {
       await expectMocked()
     })
     it('mocks when matches predicate', async () => {
-      fetch.doMockIf(input => input === testUrl)
+      fetch.doMockIf(input => input.url === testUrl)
       await expectMocked()
       await expectMocked()
     })
@@ -452,7 +452,7 @@ describe('conditional mocking', () => {
       await expectUnmocked()
     })
     it('doesnt mock when matches predicate', async () => {
-      fetch.dontMockIf(input => input === testUrl)
+      fetch.dontMockIf(input => input.url === testUrl)
       await expectUnmocked()
       await expectUnmocked()
     })
@@ -468,10 +468,10 @@ describe('conditional mocking', () => {
       const response = 'blah'
       const response2 = 'blah2'
       fetch
-        .doMockOnceIf('http://foo', response)
-        .doMockOnceIf('http://foo2', response2)
-      await expectMocked('http://foo', response)
-      await expectMocked('http://foo2', response2)
+        .doMockOnceIf('http://foo/', response)
+        .doMockOnceIf('http://foo2/', response2)
+      await expectMocked('http://foo/', response)
+      await expectMocked('http://foo2/', response2)
       //await expectMocked('http://foo3', mockedDefaultResponse)
     })
     it('mocks when matches regex', async () => {
@@ -480,7 +480,7 @@ describe('conditional mocking', () => {
       await expectMocked()
     })
     it('mocks when matches predicate', async () => {
-      fetch.doMockOnceIf(input => input === testUrl)
+      fetch.doMockOnceIf(input => input.url === testUrl)
       await expectMocked()
       await expectMocked()
     })
@@ -503,7 +503,7 @@ describe('conditional mocking', () => {
       await expectMocked()
     })
     it('doesnt mock when matches predicate', async () => {
-      fetch.dontMockOnceIf(input => input === testUrl)
+      fetch.dontMockOnceIf(input => input.url === testUrl)
       await expectUnmocked()
       await expectMocked()
     })
@@ -529,7 +529,7 @@ describe('conditional mocking', () => {
       await expectUnmocked()
     })
     it('mocks when matches predicate', async () => {
-      fetch.doMockOnceIf(input => input === testUrl)
+      fetch.doMockOnceIf(input => input.url === testUrl)
       await expectMocked()
       await expectUnmocked()
     })
@@ -555,7 +555,7 @@ describe('conditional mocking', () => {
       await expectUnmocked()
     })
     it('doesnt mock when matches predicate', async () => {
-      fetch.dontMockOnceIf(input => input === testUrl)
+      fetch.dontMockOnceIf(input => input.url === testUrl)
       await expectUnmocked()
       await expectUnmocked()
     })
