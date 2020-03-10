@@ -48,19 +48,19 @@ export interface FetchMock
 
     doMockOnce(fn?: MockResponseInitFunction): FetchMock;
     doMockOnce(response: string, responseInit?: MockParams): FetchMock;
-    //alias for doMockOnce
+    // alias for doMockOnce
     mockOnce(fn?: MockResponseInitFunction): FetchMock;
     mockOnce(response: string, responseInit?: MockParams): FetchMock;
 
     doMockIf(urlOrPredicate: UrlOrPredicate, fn?: MockResponseInitFunction): FetchMock;
     doMockIf(urlOrPredicate: UrlOrPredicate, response: string, responseInit?: MockParams): FetchMock;
-    //alias for doMockIf
+    // alias for doMockIf
     mockIf(urlOrPredicate: UrlOrPredicate, fn?: MockResponseInitFunction): FetchMock;
     mockIf(urlOrPredicate: UrlOrPredicate, response: string, responseInit?: MockParams): FetchMock;
 
     doMockOnceIf(urlOrPredicate: UrlOrPredicate, fn?: MockResponseInitFunction): FetchMock;
     doMockOnceIf(urlOrPredicate: UrlOrPredicate, response: string, responseInit?: MockParams): FetchMock;
-    //alias for doMocKOnceIf
+    // alias for doMocKOnceIf
     mockOnceIf(urlOrPredicate: UrlOrPredicate, fn?: MockResponseInitFunction): FetchMock;
     mockOnceIf(urlOrPredicate: UrlOrPredicate, response: string, responseInit?: MockParams): FetchMock;
 
