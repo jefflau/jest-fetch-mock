@@ -1,5 +1,8 @@
 # Jest Fetch Mock
 
+![npm downloads](https://img.shields.io/npm/dw/jest-fetch-mock)
+![Node.js CI](https://github.com/jefflau/jest-fetch-mock/workflows/Node.js%20CI/badge.svg)
+
 Fetch is the canonical way to do HTTP requests in the browser, and it can be used in other environments such as React Native. Jest Fetch Mock allows you to easily mock your `fetch` calls and return the response you need to fake the HTTP requests. It's easy to setup and you don't need a library like `nock` to get going and it uses Jest's built-in support for mocking under the surface. This means that any of the `jest.fn()` methods are also available. For more information on the jest mock API, check their docs [here](https://facebook.github.io/jest/docs/en/mock-functions.html)
 
 It currently supports the mocking with the [`cross-fetch`](https://www.npmjs.com/package/cross-fetch) polyfill, so it supports Node.js and any browser-like runtime.
@@ -55,61 +58,70 @@ With this done, you'll have `fetch` and `fetchMock` available on the global scop
 #### Default not mocked
 
 If you would like to have the 'fetchMock' available in all tests but not enabled then add `fetchMock.dontMock()` after the `...enableMocks()` line in `setupJest.js`:
+
 ```js
 // adds the 'fetchMock' global variable and rewires 'fetch' global to call 'fetchMock' instead of the real implementation
 require('jest-fetch-mock').enableMocks()
 // changes default behavior of fetchMock to use the real 'fetch' implementation and not mock responses
-fetchMock.dontMock() 
+fetchMock.dontMock()
 ```
+
 If you want a single test file to return to the default behavior of mocking all responses, add the following to the
 test file:
+
 ```js
-beforeEach(() => { // if you have an existing `beforeEach` just add the following line to it
+beforeEach(() => {
+  // if you have an existing `beforeEach` just add the following line to it
   fetchMock.doMock()
 })
 ```
 
 To enable mocking for a specific URL only:
+
 ```js
-beforeEach(() => { // if you have an existing `beforeEach` just add the following lines to it
+beforeEach(() => {
+  // if you have an existing `beforeEach` just add the following lines to it
   fetchMock.mockIf(/^https?:\/\/example.com.*$/, req => {
-      if (req.url.endsWith("/path1")) {
-        return "some response body"
-      } else if (req.url.endsWith("/path2")) {
-        return {
-          body: "another response body",
-          headers: {
-            "X-Some-Response-Header": "Some header value"
-          } 
-        }
-      } else {
-        return {
-          status: 404,
-          body: "Not Found"
+    if (req.url.endsWith('/path1')) {
+      return 'some response body'
+    } else if (req.url.endsWith('/path2')) {
+      return {
+        body: 'another response body',
+        headers: {
+          'X-Some-Response-Header': 'Some header value'
         }
       }
+    } else {
+      return {
+        status: 404,
+        body: 'Not Found'
+      }
+    }
   })
 })
 ```
 
 If you have changed the default behavior to use the real implementation, you can guarantee the next call to fetch
 will be mocked by using the `mockOnce` function:
+
 ```js
-fetchMock.mockOnce("the next call to fetch will always return this as the body")
+fetchMock.mockOnce('the next call to fetch will always return this as the body')
 ```
 
-This function behaves exactly like `fetchMock.once` but guarantees the next call to `fetch` will be mocked even if the 
-default behavior of fetchMock is to use the real implementation.  You can safely convert all you `fetchMock.once` calls
+This function behaves exactly like `fetchMock.once` but guarantees the next call to `fetch` will be mocked even if the
+default behavior of fetchMock is to use the real implementation. You can safely convert all you `fetchMock.once` calls
 to `fetchMock.mockOnce` without a risk of changing their behavior.
 
 ### To setup for an individual test
 
 For JavaScript add the following line to the start of your test case (before any other requires)
+
 ```js
 require('jest-fetch-mock').enableMocks()
 ```
 
 For TypeScript/ES6 add the following lines to the start of your test case (before any other imports)
+
 ```typescript
 import { enableFetchMocks } from 'jest-fetch-mock'
 enableFetchMocks()
@@ -125,8 +137,9 @@ import 'jest-fetch-mock'
 ```
 
 If you prefer you can also just import the fetchMock in a test case.
+
 ```typescript
-import fetchMock from "jest-fetch-mock"
+import fetchMock from 'jest-fetch-mock'
 ```
 
 You may also need to edit your `tsconfig.json` and add "dom" and/or "es2015" and/or "esnext" to the 'compilerConfig.lib' property
@@ -334,7 +347,8 @@ describe('Access token action creators', () => {
 
 ### Mocking aborted fetches
 
-Fetches can be mocked to act as if they were aborted during the request.  This can be done in 4 ways:
+Fetches can be mocked to act as if they were aborted during the request. This can be done in 4 ways:
+
 <ol>
 <li>Using `fetch.mockAborted()`</li>
 <li>Using `fetch.mockAbortedOnce()`</li>
@@ -695,11 +709,12 @@ Calling `fetch.resetMocks()` will return to the default behavior of mocking all 
   (i.e. "don't mock 'fetch' if the next request is for the given URL, otherwise use the default behavior")
 - `fetch.isMocking(input, init):boolean` - test utility function to see if the given url/request would be mocked.
   This is not a read only operation and any "MockOnce" will evaluate (and return to the default behavior)
-  
+
 For convenience, all the conditional mocking functions also accept optional parameters after the 1st parameter that call
-  `mockResponse` or `mockResponseOnce` respectively.  This allows you to conditionally mock a response in a single call.
+`mockResponse` or `mockResponseOnce` respectively. This allows you to conditionally mock a response in a single call.
 
 #### Conditional Mocking examples
+
 ```js
 
 describe('conditional mocking', () => {
