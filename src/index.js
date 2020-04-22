@@ -4,10 +4,14 @@ global.Response = crossFetch.Response
 global.Headers = crossFetch.Headers
 global.Request = crossFetch.Request
 
-if (!Promise) {
+if (typeof Promise === 'undefined') {
   Promise = require('promise-polyfill')
-} else if (!Promise.finally) {
+} else if (!('finally' in Promise) || typeof Promise.finally === 'undefined') {
   Promise.finally = require('promise-polyfill').finally
+}
+
+if (typeof DOMException === 'undefined') {
+  DOMException = require('domexception')
 }
 
 const ActualResponse = Response
