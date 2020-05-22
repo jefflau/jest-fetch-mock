@@ -10,6 +10,10 @@ if (!Promise) {
   Promise.finally = require('promise-polyfill').finally
 }
 
+if (typeof DOMException === 'undefined') {
+  global.DOMException = require("domexception");
+}
+
 const ActualResponse = Response
 
 function responseWrapper(body, init) {
