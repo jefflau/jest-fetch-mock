@@ -86,7 +86,8 @@ export interface MockParams {
     statusText?: string;
     headers?: string[][] | { [key: string]: string }; // HeadersInit
     url?: string;
-    counter?: number; // Set >= 1 to have redirected return true. https://github.com/node-fetch/node-fetch/blob/master/src/response.js#L39
+    /** Set >= 1 to have redirected return true. */
+    counter?: number;
 }
 
 export interface MockResponseInit extends MockParams {
