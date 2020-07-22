@@ -395,6 +395,18 @@ describe('Mocking aborts', () => {
 })
 ```
 
+
+### Mocking a redirected response
+Use the counter option in the response init object to mock a redirected response https://developer.mozilla.org/en-US/docs/Web/API/Response/redirected. 
+
+```js
+fetchMock.mockResponse("<main></main>", {
+  counter: 1,
+  status: 200,
+  statusText: "ok",
+});
+```
+
 ### Mocking multiple fetches with different responses
 
 In this next example, the store does not yet have a token, so we make a request to get an access token first. This means that we need to mock two different responses, one for each of the fetches. Here we can use `fetch.mockResponseOnce` or `fetch.once` to mock the response only once and call it twice. Because we return the mocked function, we can chain this jQuery style. It internally uses Jest's `mockImplementationOnce`. You can read more about it on the [Jest documentation](https://facebook.github.io/jest/docs/mock-functions.html#content)
