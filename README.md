@@ -397,7 +397,7 @@ describe('Mocking aborts', () => {
 
 
 ### Mocking a redirected response
-Set the counter option >= 1 in the response init object to mock a redirected response https://developer.mozilla.org/en-US/docs/Web/API/Response/redirected. 
+Set the counter option >= 1 in the response init object to mock a redirected response https://developer.mozilla.org/en-US/docs/Web/API/Response/redirected. Note, this will only work in Node.js as it's a feature of node fetch's response class https://github.com/node-fetch/node-fetch/blob/master/src/response.js#L39.
 
 ```js
 fetchMock.mockResponse("<main></main>", {
