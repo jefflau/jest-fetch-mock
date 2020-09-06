@@ -96,27 +96,30 @@ const abortAsync = () => {
   return Promise.reject(abortError())
 }
 
-const normalizeResponse = (bodyOrFunction, init) => (input, reqInit) => {
-  const [mocked, request] = isMocking(input, reqInit)
-  return mocked
-    ? isFn(bodyOrFunction)
-      ? bodyOrFunction(request).then(resp => {
-          if (request.signal && request.signal.aborted) {
-            abort()
-          }
-          return typeof resp === 'string'
-            ? responseWrapper(resp, init)
-            : responseWrapper(resp.body, responseInit(resp, init))
-        })
-      : new Promise((resolve, reject) => {
-          if (request.signal && request.signal.aborted) {
-            reject(abortError())
-            return
-          }
-          resolve(responseWrapper(bodyOrFunction, init))
-        })
-    : crossFetch.fetch(input, reqInit)
-}
+const normalizeResponse = (bodyOrFunction, init) => (input, reqInit) =>
+  new Promise(resolve => {
+    const [mocked, request] = isMocking(input, reqInit)
+    resolve(
+      mocked
+        ? isFn(bodyOrFunction)
+          ? bodyOrFunction(request).then(resp => {
+              if (request.signal && request.signal.aborted) {
+                abort()
+              }
+              return typeof resp === 'string'
+                ? responseWrapper(resp, init)
+                : responseWrapper(resp.body, responseInit(resp, init))
+            })
+          : new Promise((resolve, reject) => {
+              if (request.signal && request.signal.aborted) {
+                reject(abortError())
+                return
+              }
+              resolve(responseWrapper(bodyOrFunction, init))
+            })
+        : crossFetch.fetch(input, reqInit)
+    )
+  })
 
 const normalizeRequest = (input, reqInit) => {
   if (input instanceof Request) {

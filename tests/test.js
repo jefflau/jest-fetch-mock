@@ -116,12 +116,20 @@ describe('Mocking aborts', () => {
     await expect(request()).resolves.toEqual('')
   })
 
-  it('throws when passed an already aborted abort signal in the request init', () => {
+  it('throws when passed an already aborted abort signal in the request init', async () => {
     const c = new AbortController()
     c.abort()
-    expect(() => fetch('/', { signal: c.signal })).toThrow(
+    await expect(fetch('/', { signal: c.signal })).rejects.toThrow(
       expect.any(DOMException)
     )
+  })
+
+  it('does not throw synchronously when passed an already aborted abort signal in the request init', () => {
+    const c = new AbortController()
+    c.abort()
+    expect(() => {
+      fetch('/', { signal: c.signal }).catch(() => {})
+    }).not.toThrow()
   })
 
   it('rejects when aborted before resolved', async () => {
