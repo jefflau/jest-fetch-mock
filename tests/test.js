@@ -144,11 +144,7 @@ describe('Mocking rejects', () => {
 
   it('mocking rejects', async () => {
     fetch.mockRejectOnce('fake error')
-    try {
-      await APIRequest2('google')
-    } catch (e) {
-      expect(e).toEqual('fake error')
-    }
+    return expect(APIRequest2('google')).rejects.toEqual('fake error')
   })
 })
 
@@ -248,13 +244,7 @@ describe('request', () => {
 
   it('resolves with function', async () => {
     fetch.mockResponseOnce(() => Promise.resolve({ body: 'ok' }))
-
-    try {
-      const response = await request()
-      expect(response).toEqual('ok')
-    } catch (e) {
-      throw e
-    }
+    return expect(request()).resolves.toEqual('ok')
   })
 
   it('resolves with function and timeout', async () => {
@@ -266,10 +256,7 @@ describe('request', () => {
     try {
       const req = request()
       jest.runAllTimers()
-      const response = await req
-      expect(response).toEqual('ok')
-    } catch (e) {
-      throw e
+      return expect(req).resolves.toEqual('ok')
     } finally {
       jest.useRealTimers()
     }
@@ -281,11 +268,7 @@ describe('request', () => {
         'Uh oh, something has gone wrong. Please tweet us @randomapi about the issue. Thank you.'
     }
     fetch.mockRejectOnce(() => Promise.reject(JSON.stringify(errorData)))
-    try {
-      await request()
-    } catch (error) {
-      expect(error.message).toBe(errorData.error)
-    }
+    return expect(request()).rejects.toThrow(errorData.error)
   })
 
   it('rejects with function and timeout', async () => {
@@ -314,14 +297,10 @@ describe('request', () => {
       { headers: { bash: 'bang' } }
     )
 
-    try {
-      const response = await fetch('https://test.url', {})
-      expect(response.headers.get('ding')).toEqual('dang')
-      expect(response.headers.get('bash')).toBeNull()
-      await expect(response.text()).resolves.toEqual('ok')
-    } catch (e) {
-      throw e
-    }
+    const response = await fetch('https://test.url', {})
+    expect(response.headers.get('ding')).toEqual('dang')
+    expect(response.headers.get('bash')).toBeNull()
+    return expect(response.text()).resolves.toEqual('ok')
   })
 
   it('resolves with function returning object body and extends mock params', async () => {
@@ -337,31 +316,22 @@ describe('request', () => {
       { headers: { bash: 'bang' } }
     )
 
-    try {
-      const response = await fetch('https://bar', {})
-      expect(response.headers.get('ding')).toEqual('dang')
-      expect(response.headers.get('bash')).toBeNull()
-      expect(response.status).toBe(201)
-      expect(response.statusText).toEqual('text')
-      expect(response.url).toEqual('http://foo')
-      await expect(response.text()).resolves.toEqual('ok')
-    } catch (e) {
-      throw e
-    }
+    const response = await fetch('https://bar', {})
+    expect(response.headers.get('ding')).toEqual('dang')
+    expect(response.headers.get('bash')).toBeNull()
+    expect(response.status).toBe(201)
+    expect(response.statusText).toEqual('text')
+    expect(response.url).toEqual('http://foo')
+    return expect(response.text()).resolves.toEqual('ok')
   })
 
   it('resolves with mock response headers and function returning string', async () => {
     fetch.mockResponseOnce(() => Promise.resolve('ok'), {
       headers: { ding: 'dang' }
     })
-
-    try {
-      const response = await fetch('https://bar', {})
-      expect(response.headers.get('ding')).toEqual('dang')
-      await expect(response.text()).resolves.toEqual('ok')
-    } catch (e) {
-      throw e
-    }
+    return expect(
+      fetch('https://bar', {}).then(response => response.headers.get('ding'))
+    ).resolves.toEqual('dang')
   })
 })
 
