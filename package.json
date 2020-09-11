@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/jefflau/jest-fetch-mock#readme",
   "dependencies": {
-    "cross-fetch": "^3.0.4",
+    "cross-fetch": "^3.0.5",
     "domexception": "^2.0.1",
     "promise-polyfill": "^8.1.3"
   },
