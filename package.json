@@ -42,6 +42,7 @@
   },
   "prettier": {
     "semi": false,
+    "arrowParens": "always",
     "editor.formatOnSave": true,
     "singleQuote": true,
     "overrides": [
