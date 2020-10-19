@@ -96,11 +96,13 @@ const abortAsync = () => {
   return Promise.reject(abortError())
 }
 
+const toPromise = val => (val instanceof Promise ? val : Promise.resolve(val))
+
 const normalizeResponse = (bodyOrFunction, init) => (input, reqInit) => {
   const [mocked, request] = isMocking(input, reqInit)
   return mocked
     ? isFn(bodyOrFunction)
-      ? bodyOrFunction(request).then(resp => {
+      ? toPromise(bodyOrFunction(request)).then(resp => {
           if (request.signal && request.signal.aborted) {
             abort()
           }
