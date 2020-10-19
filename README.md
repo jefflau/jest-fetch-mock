@@ -232,11 +232,11 @@ In most of the complicated examples below, I am testing my action creators in Re
 
 ### Simple mock and assert
 
-In this simple example I won't be using any libraries. It is a simple fetch request, in this case to google.com. First we setup the `beforeEach` callback to reset our mocks. This isn't strictly necessary in this example, but since we will probably be mocking fetch more than once, we need to reset it across our tests to assert on the arguments given to fetch.
+In this simple example I won't be using any libraries. It is a simple fetch request, in this case to google.com. First we setup the `beforeEach` callback to reset our mocks. This isn't strictly necessary in this example, but since we will probably be mocking fetch more than once, we need to reset it across our tests to assert on the arguments given to fetch. Make sure the function wrapping your test is marked as async. 
 
 Once we've done that we can start to mock our response. We want to give it an object with a `data` property and a string value of `12345` and wrap it in `JSON.stringify` to JSONify it. Here we use `mockResponseOnce`, but we could also use `once`, which is an alias for a call to `mockResponseOnce`.
 
-We then call the function that we want to test with the arguments we want to test with. In the `then` callback we assert we have got the correct data back.
+We then call the function that we want to test with the arguments we want to test with. We use `await` to wait until the response resolves, and then assert we have got the correct data back.
 
 Finally we can assert on the `.mock` state that Jest provides for us to test what arguments were given to fetch and how many times it was called
 
@@ -260,13 +260,12 @@ describe('testing api', () => {
     fetch.resetMocks()
   })
 
-  it('calls google and returns data to me', () => {
+  it('calls google and returns data to me', async () => {
     fetch.mockResponseOnce(JSON.stringify({ data: '12345' }))
 
     //assert on the response
-    APIRequest('google').then(res => {
-      expect(res.data).toEqual('12345')
-    })
+    const res = await APIRequest('google')
+    expect(res.data).toEqual('12345')
 
     //assert on the times called and arguments given to fetch
     expect(fetch.mock.calls.length).toEqual(1)
