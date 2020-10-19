@@ -29,7 +29,7 @@ describe('testing mockResponse and alias once', () => {
 
     expect(response).toEqual([
       { secret_data: '12345' },
-      { secret_data: '67891' }
+      { secret_data: '67891' },
     ])
 
     expect(fetch.mock.calls.length).toEqual(2)
@@ -61,7 +61,7 @@ describe('testing mockResponse and alias once', () => {
 
     expect(response).toEqual([
       { secret_data: '12345' },
-      { secret_data: '67891' }
+      { secret_data: '67891' },
     ])
 
     expect(fetch.mock.calls.length).toEqual(2)
@@ -86,7 +86,7 @@ describe('testing mockResponses', () => {
     const response = await APIRequest('facebook')
     expect(response).toEqual([
       { name: 'naruto', average_score: 79 },
-      { name: 'bleach', average_score: 68 }
+      { name: 'bleach', average_score: 68 },
     ])
     expect(fetch.mock.calls.length).toEqual(2)
 
@@ -157,39 +157,39 @@ describe('request', () => {
     const url = 'http://foo.bar/'
     const requestInit = {
       headers: {
-        foo: 'bar'
-      }
+        foo: 'bar',
+      },
     }
     const responseInit = {
       headers: {
-        bing: 'dang'
-      }
+        bing: 'dang',
+      },
     }
     const response = 'foobarbang'
-    fetch.mockResponse(input => {
+    fetch.mockResponse((input) => {
       expect(input).toHaveProperty('url', url)
       expect(input.headers.get('foo')).toEqual('bar')
       return Promise.resolve(response)
     }, responseInit)
-    return fetch(url, requestInit).then(resp => {
+    return fetch(url, requestInit).then((resp) => {
       expect(resp.headers.get('bing')).toEqual(responseInit.headers.bing)
       return expect(resp.text()).resolves.toEqual(response)
     })
   })
 
-  it('returns object when response is json', done => {
+  it('returns object when response is json', (done) => {
     const mockResponse = {
       results: [{ gender: 'neutral' }],
-      info: { seed: '0123456789123456', results: 1, page: 1, version: '1.2' }
+      info: { seed: '0123456789123456', results: 1, page: 1, version: '1.2' },
     }
     fetch.mockResponseOnce(JSON.stringify(mockResponse), {
       headers: {
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     })
 
     request()
-      .then(response => {
+      .then((response) => {
         expect(fetch).toHaveBeenCalledWith('https://randomuser.me/api', {})
         expect(response).toEqual(mockResponse)
         done()
@@ -197,11 +197,11 @@ describe('request', () => {
       .catch(done.fail)
   })
 
-  it('returns text when response is text', done => {
+  it('returns text when response is text', (done) => {
     fetch.mockResponseOnce('ok')
 
     request()
-      .then(response => {
+      .then((response) => {
         expect(fetch).toHaveBeenCalledWith('https://randomuser.me/api', {})
         expect(response).toEqual('ok')
         done()
@@ -213,8 +213,8 @@ describe('request', () => {
     const contentType = 'text/csv; charset=utf-8'
     fetch.mockResponseOnce('csv data', {
       headers: {
-        'Content-Type': contentType
-      }
+        'Content-Type': contentType,
+      },
     })
 
     try {
@@ -227,16 +227,16 @@ describe('request', () => {
     expect(fetch).toHaveBeenCalledWith('https://randomuser.me/api', {})
   })
 
-  it('rejects with error data', done => {
+  it('rejects with error data', (done) => {
     const errorData = {
       error:
-        'Uh oh, something has gone wrong. Please tweet us @randomapi about the issue. Thank you.'
+        'Uh oh, something has gone wrong. Please tweet us @randomapi about the issue. Thank you.',
     }
     fetch.mockRejectOnce(JSON.stringify(errorData))
 
     request()
       .then(done.fail)
-      .catch(error => {
+      .catch((error) => {
         expect(error.message).toBe(errorData.error)
         done()
       })
@@ -251,7 +251,9 @@ describe('request', () => {
     jest.useFakeTimers()
     fetch.mockResponseOnce(
       () =>
-        new Promise(resolve => setTimeout(() => resolve({ body: 'ok' }), 5000))
+        new Promise((resolve) =>
+          setTimeout(() => resolve({ body: 'ok' }), 5000)
+        )
     )
     try {
       const req = request()
@@ -265,7 +267,7 @@ describe('request', () => {
   it('rejects with function', async () => {
     const errorData = {
       error:
-        'Uh oh, something has gone wrong. Please tweet us @randomapi about the issue. Thank you.'
+        'Uh oh, something has gone wrong. Please tweet us @randomapi about the issue. Thank you.',
     }
     fetch.mockRejectOnce(() => Promise.reject(JSON.stringify(errorData)))
     return expect(request()).rejects.toThrow(errorData.error)
@@ -274,7 +276,7 @@ describe('request', () => {
   it('rejects with function and timeout', async () => {
     const errorData = {
       error:
-        'Uh oh, something has gone wrong. Please tweet us @randomapi about the issue. Thank you.'
+        'Uh oh, something has gone wrong. Please tweet us @randomapi about the issue. Thank you.',
     }
     fetch.mockRejectOnce(
       () =>
@@ -311,7 +313,7 @@ describe('request', () => {
           headers: { ding: 'dang' },
           status: 201,
           statusText: 'text',
-          url: 'http://foo'
+          url: 'http://foo',
         }),
       { headers: { bash: 'bang' } }
     )
@@ -327,10 +329,10 @@ describe('request', () => {
 
   it('resolves with mock response headers and function returning string', async () => {
     fetch.mockResponseOnce(() => Promise.resolve('ok'), {
-      headers: { ding: 'dang' }
+      headers: { ding: 'dang' },
     })
     return expect(
-      fetch('https://bar', {}).then(response => response.headers.get('ding'))
+      fetch('https://bar', {}).then((response) => response.headers.get('ding'))
     ).resolves.toEqual('dang')
   })
 })
@@ -358,7 +360,7 @@ describe('conditional mocking', () => {
   const expectMocked = async (uri, response = mockedDefaultResponse) => {
     return expect(request(uri)).resolves.toEqual(response)
   }
-  const expectUnmocked = async uri => {
+  const expectUnmocked = async (uri) => {
     return expect(request(uri)).resolves.toEqual(realResponse)
   }
 
@@ -371,10 +373,7 @@ describe('conditional mocking', () => {
     })
     it('dont mock once then mock twice', async () => {
       const otherResponse = 'other response'
-      fetch
-        .dontMockOnce()
-        .once(otherResponse)
-        .once(otherResponse)
+      fetch.dontMockOnce().once(otherResponse).once(otherResponse)
 
       await expectUnmocked()
       await expectMocked(defaultRequestUri, otherResponse)
@@ -399,7 +398,7 @@ describe('conditional mocking', () => {
       await expectMocked()
     })
     it('mocks when matches predicate', async () => {
-      fetch.doMockIf(input => input.url === testUrl)
+      fetch.doMockIf((input) => input.url === testUrl)
       await expectMocked()
       await expectMocked()
     })
@@ -422,7 +421,7 @@ describe('conditional mocking', () => {
       await expectUnmocked()
     })
     it('doesnt mock when matches predicate', async () => {
-      fetch.dontMockIf(input => input.url === testUrl)
+      fetch.dontMockIf((input) => input.url === testUrl)
       await expectUnmocked()
       await expectUnmocked()
     })
@@ -450,7 +449,7 @@ describe('conditional mocking', () => {
       await expectMocked()
     })
     it('mocks when matches predicate', async () => {
-      fetch.doMockOnceIf(input => input.url === testUrl)
+      fetch.doMockOnceIf((input) => input.url === testUrl)
       await expectMocked()
       await expectMocked()
     })
@@ -473,7 +472,7 @@ describe('conditional mocking', () => {
       await expectMocked()
     })
     it('doesnt mock when matches predicate', async () => {
-      fetch.dontMockOnceIf(input => input.url === testUrl)
+      fetch.dontMockOnceIf((input) => input.url === testUrl)
       await expectUnmocked()
       await expectMocked()
     })
@@ -499,7 +498,7 @@ describe('conditional mocking', () => {
       await expectUnmocked()
     })
     it('mocks when matches predicate', async () => {
-      fetch.doMockOnceIf(input => input.url === testUrl)
+      fetch.doMockOnceIf((input) => input.url === testUrl)
       await expectMocked()
       await expectUnmocked()
     })
@@ -525,7 +524,7 @@ describe('conditional mocking', () => {
       await expectUnmocked()
     })
     it('doesnt mock when matches predicate', async () => {
-      fetch.dontMockOnceIf(input => input.url === testUrl)
+      fetch.dontMockOnceIf((input) => input.url === testUrl)
       await expectUnmocked()
       await expectUnmocked()
     })
@@ -564,12 +563,12 @@ describe('conditional mocking', () => {
         // .mockResponse(mockedDefaultResponse) // set above - here for clarity
         .mockResponseOnce('1') // 1
         .mockResponseOnce('2') // 2
-        .mockResponseOnce(async request =>
+        .mockResponseOnce(async (request) =>
           request.url === alternativeUrl ? alternativeBody : '3'
         ) // 3
         .mockResponseOnce('4') // 4
         .mockResponseOnce('5') // 5
-        .mockResponseOnce(async request =>
+        .mockResponseOnce(async (request) =>
           request.url === alternativeUrl
             ? alternativeBody
             : mockedDefaultResponse
