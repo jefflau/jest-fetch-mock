@@ -10,7 +10,7 @@ It currently supports the mocking with the [`cross-fetch`](https://www.npmjs.com
 ## Contents
 
 - [Usage](#usage)
-  - [Installation and Setup](#installation-and-setup)
+  - [Installation and Setup](#package-installation)
   - [Using with Create-React-App](#using-with-create-react-app)
 - [API](#api)
 - [Examples](#examples)
