@@ -247,7 +247,7 @@ fetch.resetMocks = () => {
   // reset to default implementation with each reset
   fetch.mockImplementation(normalizeResponse(''))
   fetch.doMock()
-  fetch.isMocking = isMocking
+  fetch.isMocking = (req, reqInit) => isMocking(req, reqInit)[0]
 }
 
 fetch.enableMocks = fetch.enableFetchMocks = () => {
