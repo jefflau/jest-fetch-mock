@@ -29,7 +29,7 @@ describe('testing mockResponse and alias once', () => {
 
     expect(response).toEqual([
       { secret_data: '12345' },
-      { secret_data: '67891' }
+      { secret_data: '67891' },
     ])
 
     expect(fetch.mock.calls.length).toEqual(2)
@@ -61,7 +61,7 @@ describe('testing mockResponse and alias once', () => {
 
     expect(response).toEqual([
       { secret_data: '12345' },
-      { secret_data: '67891' }
+      { secret_data: '67891' },
     ])
 
     expect(fetch.mock.calls.length).toEqual(2)
@@ -86,7 +86,7 @@ describe('testing mockResponses', () => {
     const response = await APIRequest('facebook')
     expect(response).toEqual([
       { name: 'naruto', average_score: 79 },
-      { name: 'bleach', average_score: 68 }
+      { name: 'bleach', average_score: 68 },
     ])
     expect(fetch.mock.calls.length).toEqual(2)
 
@@ -157,13 +157,13 @@ describe('request', () => {
     const url = 'http://foo.bar/'
     const requestInit = {
       headers: {
-        foo: 'bar'
-      }
+        foo: 'bar',
+      },
     }
     const responseInit = {
       headers: {
-        bing: 'dang'
-      }
+        bing: 'dang',
+      },
     }
     const response = 'foobarbang'
     fetch.mockResponse((input) => {
@@ -180,12 +180,12 @@ describe('request', () => {
   it('returns object when response is json', (done) => {
     const mockResponse = {
       results: [{ gender: 'neutral' }],
-      info: { seed: '0123456789123456', results: 1, page: 1, version: '1.2' }
+      info: { seed: '0123456789123456', results: 1, page: 1, version: '1.2' },
     }
     fetch.mockResponseOnce(JSON.stringify(mockResponse), {
       headers: {
-        'Content-Type': 'application/json'
-      }
+        'Content-Type': 'application/json',
+      },
     })
 
     request()
@@ -213,8 +213,8 @@ describe('request', () => {
     const contentType = 'text/csv; charset=utf-8'
     fetch.mockResponseOnce('csv data', {
       headers: {
-        'Content-Type': contentType
-      }
+        'Content-Type': contentType,
+      },
     })
 
     try {
@@ -230,7 +230,7 @@ describe('request', () => {
   it('rejects with error data', (done) => {
     const errorData = {
       error:
-        'Uh oh, something has gone wrong. Please tweet us @randomapi about the issue. Thank you.'
+        'Uh oh, something has gone wrong. Please tweet us @randomapi about the issue. Thank you.',
     }
     fetch.mockRejectOnce(JSON.stringify(errorData))
 
@@ -267,7 +267,7 @@ describe('request', () => {
   it('rejects with function', async () => {
     const errorData = {
       error:
-        'Uh oh, something has gone wrong. Please tweet us @randomapi about the issue. Thank you.'
+        'Uh oh, something has gone wrong. Please tweet us @randomapi about the issue. Thank you.',
     }
     fetch.mockRejectOnce(() => Promise.reject(JSON.stringify(errorData)))
     return expect(request()).rejects.toThrow(errorData.error)
@@ -276,7 +276,7 @@ describe('request', () => {
   it('rejects with function and timeout', async () => {
     const errorData = {
       error:
-        'Uh oh, something has gone wrong. Please tweet us @randomapi about the issue. Thank you.'
+        'Uh oh, something has gone wrong. Please tweet us @randomapi about the issue. Thank you.',
     }
     fetch.mockRejectOnce(
       () =>
@@ -312,7 +312,7 @@ describe('request', () => {
         headers: { ding: 'dang' },
         status: 201,
         statusText: 'text',
-        url: 'http://foo'
+        url: 'http://foo',
       }),
       { headers: { bash: 'bang' } }
     )
@@ -328,7 +328,7 @@ describe('request', () => {
 
   it('resolves with mock response headers and function returning string', async () => {
     fetch.mockResponseOnce(() => Promise.resolve('ok'), {
-      headers: { ding: 'dang' }
+      headers: { ding: 'dang' },
     })
     return expect(
       fetch('https://bar', {}).then((response) => response.headers.get('ding'))
@@ -372,10 +372,7 @@ describe('conditional mocking', () => {
     })
     it('dont mock once then mock twice', async () => {
       const otherResponse = 'other response'
-      fetch
-        .dontMockOnce()
-        .once(otherResponse)
-        .once(otherResponse)
+      fetch.dontMockOnce().once(otherResponse).once(otherResponse)
 
       await expectUnmocked()
       await expectMocked(defaultRequestUri, otherResponse)
