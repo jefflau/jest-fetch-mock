@@ -10,7 +10,7 @@ It currently supports the mocking with the [`cross-fetch`](https://www.npmjs.com
 ## Contents
 
 - [Usage](#usage)
-  - [Installation and Setup](#installation-and-setup)
+  - [Installation and Setup](#package-installation)
   - [Using with Create-React-App](#using-with-create-react-app)
 - [API](#api)
 - [Examples](#examples)
@@ -146,7 +146,7 @@ You may also need to edit your `tsconfig.json` and add "dom" and/or "es2015" and
 
 ### Using with Create-React-App
 
-If you are using [Create-React-App](https://github.com/facebookincubator/create-react-app) (CRA), the code for `setupTest.js` above should be placed into `src/setupTests.js` in the root of your project. CRA automatically uses this filename by convention in the Jest configuration it generates. Similarly, changing to your `package.json` is not required as CRA handles this when generating your Jest configuration.
+If you are using [Create-React-App](https://github.com/facebookincubator/create-react-app) (CRA), the code for `setupJest.js` above should be placed into `src/setupTests.js` in the root of your project. CRA automatically uses this filename by convention in the Jest configuration it generates. Similarly, changing to your `package.json` is not required as CRA handles this when generating your Jest configuration.
 
 ### For Ejected Create React Apps _ONLY_:
 
@@ -232,11 +232,11 @@ In most of the complicated examples below, I am testing my action creators in Re
 
 ### Simple mock and assert
 
-In this simple example I won't be using any libraries. It is a simple fetch request, in this case to google.com. First we setup the `beforeEach` callback to reset our mocks. This isn't strictly necessary in this example, but since we will probably be mocking fetch more than once, we need to reset it across our tests to assert on the arguments given to fetch.
+In this simple example I won't be using any libraries. It is a simple fetch request, in this case to google.com. First we setup the `beforeEach` callback to reset our mocks. This isn't strictly necessary in this example, but since we will probably be mocking fetch more than once, we need to reset it across our tests to assert on the arguments given to fetch. Make sure the function wrapping your test is marked as async. 
 
-Once we've done that we can start to mock our response. We want to give it an objectwith a `data` property and a string value of `12345` and wrap it in `JSON.stringify` to JSONify it. Here we use `mockResponseOnce`, but we could also use `once`, which is an alias for a call to `mockResponseOnce`
+Once we've done that we can start to mock our response. We want to give it an object with a `data` property and a string value of `12345` and wrap it in `JSON.stringify` to JSONify it. Here we use `mockResponseOnce`, but we could also use `once`, which is an alias for a call to `mockResponseOnce`.
 
-We then call the function that we want to test with the arguments we want to test with. In the `then` callback we assert we have got the correct data back.
+We then call the function that we want to test with the arguments we want to test with. We use `await` to wait until the response resolves, and then assert we have got the correct data back.
 
 Finally we can assert on the `.mock` state that Jest provides for us to test what arguments were given to fetch and how many times it was called
 
@@ -260,13 +260,12 @@ describe('testing api', () => {
     fetch.resetMocks()
   })
 
-  it('calls google and returns data to me', () => {
+  it('calls google and returns data to me', async () => {
     fetch.mockResponseOnce(JSON.stringify({ data: '12345' }))
 
     //assert on the response
-    APIRequest('google').then(res => {
-      expect(res.data).toEqual('12345')
-    })
+    const res = await APIRequest('google')
+    expect(res.data).toEqual('12345')
 
     //assert on the times called and arguments given to fetch
     expect(fetch.mock.calls.length).toEqual(1)
@@ -393,6 +392,18 @@ describe('Mocking aborts', () => {
     await expect(fetch('/', { signal: c.signal })).rejects.toThrow('Aborted!')
   })
 })
+```
+
+
+### Mocking a redirected response
+Set the counter option >= 1 in the response init object to mock a redirected response https://developer.mozilla.org/en-US/docs/Web/API/Response/redirected. Note, this will only work in Node.js as it's a feature of node fetch's response class https://github.com/node-fetch/node-fetch/blob/master/src/response.js#L39.
+
+```js
+fetchMock.mockResponse("<main></main>", {
+  counter: 1,
+  status: 200,
+  statusText: "ok",
+});
 ```
 
 ### Mocking multiple fetches with different responses

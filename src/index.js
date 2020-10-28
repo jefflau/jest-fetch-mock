@@ -57,9 +57,9 @@ function responseInit(resp, init) {
 function requestMatches(urlOrPredicate) {
   const predicate =
     urlOrPredicate instanceof RegExp
-      ? input => urlOrPredicate.test(input.url)
+      ? (input) => urlOrPredicate.test(input.url)
       : typeof urlOrPredicate === 'string'
-      ? input => input.url === urlOrPredicate
+      ? (input) => input.url === urlOrPredicate
       : urlOrPredicate
   return (input, reqInit) => {
     const req = normalizeRequest(input, reqInit)
@@ -69,7 +69,7 @@ function requestMatches(urlOrPredicate) {
 
 function requestNotMatches(urlOrPredicate) {
   const matches = requestMatches(urlOrPredicate)
-  return input => {
+  return (input) => {
     const result = matches(input)
     return [!result[0], result[1]]
   }
@@ -81,7 +81,7 @@ function staticMatches(value) {
   }
 }
 
-const isFn = unknown => typeof unknown === 'function'
+const isFn = (unknown) => typeof unknown === 'function'
 
 const isMocking = jest.fn(staticMatches(true))
 
@@ -96,13 +96,13 @@ const abortAsync = () => {
   return Promise.reject(abortError())
 }
 
-const toPromise = val => (val instanceof Promise ? val : Promise.resolve(val))
+const toPromise = (val) => (val instanceof Promise ? val : Promise.resolve(val))
 
 const normalizeResponse = (bodyOrFunction, init) => (input, reqInit) => {
   const [mocked, request] = isMocking(input, reqInit)
   return mocked
     ? isFn(bodyOrFunction)
-      ? toPromise(bodyOrFunction(request)).then(resp => {
+      ? toPromise(bodyOrFunction(request)).then((resp) => {
           if (request.signal && request.signal.aborted) {
             abort()
           }
@@ -136,7 +136,7 @@ const normalizeRequest = (input, reqInit) => {
   }
 }
 
-const normalizeError = errorOrFunction =>
+const normalizeError = (errorOrFunction) =>
   isFn(errorOrFunction)
     ? errorOrFunction
     : () => Promise.reject(errorOrFunction)
@@ -148,7 +148,7 @@ fetch.Request = Request
 fetch.mockResponse = (bodyOrFunction, init) =>
   fetch.mockImplementation(normalizeResponse(bodyOrFunction, init))
 
-fetch.mockReject = errorOrFunction =>
+fetch.mockReject = (errorOrFunction) =>
   fetch.mockImplementation(normalizeError(errorOrFunction))
 
 fetch.mockAbort = () => fetch.mockImplementation(abortAsync)
@@ -161,11 +161,11 @@ fetch.mockResponseOnce = mockResponseOnce
 
 fetch.once = mockResponseOnce
 
-fetch.mockRejectOnce = errorOrFunction =>
+fetch.mockRejectOnce = (errorOrFunction) =>
   fetch.mockImplementationOnce(normalizeError(errorOrFunction))
 
 fetch.mockResponses = (...responses) => {
-  responses.forEach(response => {
+  responses.forEach((response) => {
     if (Array.isArray(response)) {
       const [body, init] = response
       fetch.mockImplementationOnce(normalizeResponse(body, init))
