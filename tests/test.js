@@ -307,14 +307,13 @@ describe('request', () => {
 
   it('resolves with function returning object body and extends mock params', async () => {
     fetch.mockResponseOnce(
-      () =>
-        Promise.resolve({
-          body: 'ok',
-          headers: { ding: 'dang' },
-          status: 201,
-          statusText: 'text',
-          url: 'http://foo',
-        }),
+      () => ({
+        body: 'ok',
+        headers: { ding: 'dang' },
+        status: 201,
+        statusText: 'text',
+        url: 'http://foo',
+      }),
       { headers: { bash: 'bang' } }
     )
 

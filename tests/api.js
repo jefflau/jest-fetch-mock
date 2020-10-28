@@ -2,21 +2,21 @@ require('cross-fetch/polyfill')
 
 async function APIRequest(who) {
   if (who === 'facebook') {
-    const call1 = fetch('https://facebook.com/someOtherResource').then(res =>
+    const call1 = fetch('https://facebook.com/someOtherResource').then((res) =>
       res.json()
     )
-    const call2 = fetch('https://facebook.com').then(res => res.json())
+    const call2 = fetch('https://facebook.com').then((res) => res.json())
     return Promise.all([call1, call2])
   } else if (who === 'twitter') {
-    return fetch('https://twitter.com').then(res => res.json())
+    return fetch('https://twitter.com').then((res) => res.json())
   } else {
-    return fetch('https://google.com').then(res => res.json())
+    return fetch('https://google.com').then((res) => res.json())
   }
 }
 
 function APIRequest2(who) {
   if (who === 'google') {
-    return fetch('https://google.com').then(res => res.json())
+    return fetch('https://google.com').then((res) => res.json())
   } else {
     return 'no argument provided'
   }
@@ -26,7 +26,7 @@ const defaultRequestUri = 'https://randomuser.me/api'
 
 function request(uri = defaultRequestUri) {
   return fetch(uri, {})
-    .then(response => {
+    .then((response) => {
       const contentType = response.headers.get('content-type')
 
       if (/application\/json/.test(contentType)) {
@@ -43,7 +43,7 @@ function request(uri = defaultRequestUri) {
 
       return response
     })
-    .catch(error => {
+    .catch((error) => {
       const errorData = JSON.parse(error)
       throw new Error(errorData.error)
     })
@@ -53,5 +53,5 @@ module.exports = {
   request,
   APIRequest,
   APIRequest2,
-  defaultRequestUri
+  defaultRequestUri,
 }

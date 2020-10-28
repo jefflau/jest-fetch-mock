@@ -39,7 +39,9 @@ fetchMock.mockResponses(someAsyncHandler, JSON.stringify({}));
 fetchMock.mockResponses(someAsyncHandler);
 fetchMock.mockResponses([JSON.stringify({foo: "bar"}), {status: 200}]);
 fetchMock.mockResponses(
+    someSyncHandler,
     someAsyncHandler,
+    someSyncStringHandler,
     someAsyncStringHandler,
     [JSON.stringify({foo: "bar"}), {status: 200}]
 );
@@ -88,7 +90,18 @@ async function someAsyncHandler(): Promise<MockResponseInit> {
     };
 }
 
+function someSyncHandler(): MockResponseInit {
+    return {
+        status: 200,
+        body: someSyncStringHandler()
+    };
+}
+
 async function someAsyncStringHandler(): Promise<string> {
+    return Promise.resolve(someSyncStringHandler());
+}
+
+function someSyncStringHandler(): string {
     return JSON.stringify({foo: "bar"});
 }
 

@@ -45,6 +45,7 @@
     "arrowParens": "always",
     "editor.formatOnSave": true,
     "singleQuote": true,
+    "trailingComma": "es5",
     "overrides": [
       {
         "files": "**/*.ts",
@@ -52,7 +53,7 @@
           "semi": true,
           "tabWidth": 4,
           "singleQuote": false,
-          "printWidth": 120
+          "printWidth": 125
         }
       }
     ]

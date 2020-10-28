@@ -96,11 +96,13 @@ const abortAsync = () => {
   return Promise.reject(abortError())
 }
 
+const toPromise = (val) => (val instanceof Promise ? val : Promise.resolve(val))
+
 const normalizeResponse = (bodyOrFunction, init) => (input, reqInit) => {
   const [mocked, request] = isMocking(input, reqInit)
   return mocked
     ? isFn(bodyOrFunction)
-      ? bodyOrFunction(request).then((resp) => {
+      ? toPromise(bodyOrFunction(request)).then((resp) => {
           if (request.signal && request.signal.aborted) {
             abort()
           }
@@ -245,7 +247,7 @@ fetch.resetMocks = () => {
   // reset to default implementation with each reset
   fetch.mockImplementation(normalizeResponse(''))
   fetch.doMock()
-  fetch.isMocking = isMocking
+  fetch.isMocking = (req, reqInit) => isMocking(req, reqInit)[0]
 }
 
 fetch.enableMocks = fetch.enableFetchMocks = () => {
