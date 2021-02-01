@@ -79,6 +79,7 @@ export interface FetchMock
     resetMocks(): void;
     enableMocks(): void;
     disableMocks(): void;
+    enableFetchMocks(): void;
 }
 
 export interface MockParams {
