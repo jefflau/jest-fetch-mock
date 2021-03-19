@@ -131,6 +131,11 @@ const normalizeRequest = (input, reqInit) => {
       abort()
     }
     return new Request(input, reqInit)
+  } else if (typeof input.toString === 'function') {
+    if (reqInit && reqInit.signal && reqInit.signal.aborted) {
+      abort()
+    }
+    return new Request(input.toString(), reqInit)
   } else {
     throw new TypeError('Unable to parse input as string or Request')
   }
