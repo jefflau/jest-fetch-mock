@@ -47,6 +47,7 @@ Add the setupFile to your jest config in `package.json`:
 ```JSON
 "jest": {
   "automock": false,
+  "resetMocks": false,
   "setupFiles": [
     "./setupJest.js"
   ]
@@ -54,6 +55,8 @@ Add the setupFile to your jest config in `package.json`:
 ```
 
 With this done, you'll have `fetch` and `fetchMock` available on the global scope. Fetch will be used as usual by your code and you'll use `fetchMock` in your tests
+
+Note: the `resetMocks` Jest configuration default was changed from `false` to `true` in Jest 4.0.1.  Therefore the Jest configuration of setting it to `false` is required if the `setupJest.js` is what calls "enableMocks()" (i.e. in the above suggested setup) otherwise you will need to call "enableMocks()" in a "beforeEach" block.
 
 #### Default not mocked
 
