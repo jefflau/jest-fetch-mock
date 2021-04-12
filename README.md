@@ -84,7 +84,7 @@ To enable mocking for a specific URL only:
 ```js
 beforeEach(() => {
   // if you have an existing `beforeEach` just add the following lines to it
-  fetchMock.mockIf(/^https?:\/\/example.com.*$/, req => {
+  fetchMock.mockIf(/^https?:\/\/example.com.*$/, async (req) => {
     if (req.url.endsWith('/path1')) {
       return 'some response body'
     } else if (req.url.endsWith('/path2')) {
