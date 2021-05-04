@@ -84,6 +84,10 @@ function staticMatches(value) {
 const isFn = (unknown) => typeof unknown === 'function'
 
 const isMocking = jest.fn(staticMatches(true))
+beforeEach(() => {
+  // This fixes errors caused by `resetMocks: true` being set in jest.config.js
+  isMocking = jest.fn(staticMatches(true))
+})
 
 const abortError = () =>
   new DOMException('The operation was aborted. ', 'AbortError')
@@ -147,6 +151,11 @@ const normalizeError = (errorOrFunction) =>
     : () => Promise.reject(errorOrFunction)
 
 const fetch = jest.fn(normalizeResponse(''))
+beforeEach(() => {
+  // This fixes errors caused by `resetMocks: true` being set in jest.config.js
+  fetch = jest.fn(normalizeResponse(''))
+})
+
 fetch.Headers = Headers
 fetch.Response = responseWrapper
 fetch.Request = Request
