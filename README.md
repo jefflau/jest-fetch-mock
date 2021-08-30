@@ -1136,6 +1136,12 @@ describe('conditional mocking complex', () => {
 
 ## Troubleshooting
 
+### jest-fetch-mock does not mock fetch calls
+If fetchMock is not working check that you do *not* have `import fetch from
+'cross-fetch'` or similar in your non-test code. This is because
+`jest-fetch-mock` modifies the global state and such imports may override the
+fetch-mocks.
+
 ### Typescript fetchMock global does not exist
 
 If you are using Typescript and receive errors about the `fetchMock` global not
