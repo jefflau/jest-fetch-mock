@@ -1,4 +1,5 @@
 const { APIRequest, APIRequest2, defaultRequestUri, request } = require('./api')
+const { Request: ApolloRequest } = require('apollo-server-env')
 
 describe('testing mockResponse and alias once', () => {
   beforeEach(() => {
@@ -424,6 +425,16 @@ describe('conditional mocking', () => {
       fetch.doMockIf((input) => input.url === testUrl)
       await expectMocked()
       await expectMocked()
+    })
+    it('supports request objects', async () => {
+      fetch.doMockIf(defaultRequestUri)
+      await expectMocked(new Request({ href: defaultRequestUri }))
+      await expectUnmocked(new Request({ href: 'http://foo' }))
+    })
+    it.skip('supports Apollo request objects', async () => {
+      fetch.doMockIf(defaultRequestUri)
+      await expectMocked(new ApolloRequest({ href: defaultRequestUri }))
+      await expectUnmocked(new ApolloRequest({ href: 'http://foo' }))
     })
   })
 
