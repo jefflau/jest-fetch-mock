@@ -431,7 +431,7 @@ describe('conditional mocking', () => {
       await expectMocked(new Request({ href: defaultRequestUri }))
       await expectUnmocked(new Request({ href: 'http://foo' }))
     })
-    it.skip('supports Apollo request objects', async () => {
+    it('supports Apollo request objects', async () => {
       fetch.doMockIf(defaultRequestUri)
       await expectMocked(new ApolloRequest({ href: defaultRequestUri }))
       await expectUnmocked(new ApolloRequest({ href: 'http://foo' }))

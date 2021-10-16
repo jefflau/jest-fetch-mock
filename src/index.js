@@ -121,7 +121,7 @@ const normalizeResponse = (bodyOrFunction, init) => (input, reqInit) => {
 }
 
 const normalizeRequest = (input, reqInit) => {
-  if (input instanceof Request) {
+  if (input.constructor.toString().startsWith('class Request')) {
     if (input.signal && input.signal.aborted) {
       abort()
     }
