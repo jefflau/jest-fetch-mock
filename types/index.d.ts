@@ -91,7 +91,7 @@ export interface MockParams {
 }
 
 export interface MockResponseInit extends MockParams {
-    body?: string | Buffer;
+    body?: string;
     init?: MockParams;
 }
 
