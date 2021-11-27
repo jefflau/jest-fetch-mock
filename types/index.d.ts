@@ -98,7 +98,7 @@ export interface MockResponseInit extends MockParams {
 export type ErrorOrFunction = Error | ((...args: any[]) => Promise<any>);
 export type UrlOrPredicate = string | RegExp | ((input: Request) => boolean);
 
-export type MockResponseInitFunction = (request: Request) => MockResponseInit | string | Promise<MockResponseInit | string | Response>;
+export type MockResponseInitFunction = (request: Request) => MockResponseInit | string | Response | Promise<MockResponseInit | string | Response>;
 
 // alias of fetchMock.enableMocks() for ES6 import syntax to not clash with other libraries
 export function enableFetchMocks(): void;
