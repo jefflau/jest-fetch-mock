@@ -91,14 +91,14 @@ export interface MockParams {
 }
 
 export interface MockResponseInit extends MockParams {
-    body?: string;
+    body?: string | Buffer;
     init?: MockParams;
 }
 
 export type ErrorOrFunction = Error | ((...args: any[]) => Promise<any>);
 export type UrlOrPredicate = string | RegExp | ((input: Request) => boolean);
 
-export type MockResponseInitFunction = (request: Request) => MockResponseInit | string | Promise<MockResponseInit | string>;
+export type MockResponseInitFunction = (request: Request) => MockResponseInit | string | Promise<MockResponseInit | string | Response>;
 
 // alias of fetchMock.enableMocks() for ES6 import syntax to not clash with other libraries
 export function enableFetchMocks(): void;

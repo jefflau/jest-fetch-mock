@@ -1,4 +1,6 @@
+const { StringDecoder } = require('string_decoder');
 const { APIRequest, APIRequest2, defaultRequestUri, request } = require('./api')
+
 
 describe('testing mockResponse and alias once', () => {
   beforeEach(() => {
@@ -358,6 +360,15 @@ describe('request', () => {
       fetch('https://bar', {}).then((response) => response.headers.get('ding'))
     ).resolves.toEqual('dang')
   })
+
+  it('resolves with mocked response containing buffer', () => {
+    fetch.mockResponseOnce(() => Promise.resolve(new Response(Buffer.from('foo'))))
+    return expect(
+      fetch('https://bar', {})
+        .then((response) => response.arrayBuffer())
+        .then((arrayBuffer) => new StringDecoder('utf8').write(new Uint8Array(arrayBuffer)))
+    ).resolves.toEqual('foo')
+  });
 })
 
 describe('conditional mocking', () => {
