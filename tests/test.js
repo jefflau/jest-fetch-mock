@@ -1,7 +1,6 @@
 const { StringDecoder } = require('string_decoder');
 const { APIRequest, APIRequest2, defaultRequestUri, request } = require('./api')
 
-
 describe('testing mockResponse and alias once', () => {
   beforeEach(() => {
     fetch.resetMocks()
