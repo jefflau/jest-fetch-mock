@@ -360,7 +360,7 @@ describe('request', () => {
     ).resolves.toEqual('dang')
   })
 
-  it('accepts a promise containing a repsonse containing a buffer', () => {
+  it('accepts a promise that resolves with a repsonse', () => {
     fetch.mockResponseOnce(() => Promise.resolve(new Response(Buffer.from('foo'))))
     return expect(
       fetch('https://bar', {})
@@ -369,7 +369,7 @@ describe('request', () => {
     ).resolves.toEqual('foo')
   })
 
-  it('accepts a response containing a buffer', () => {
+  it('accepts a response', () => {
     fetch.mockResponseOnce(new Response(Buffer.from('foo')))
     return expect(
       fetch('https://bar', {})
