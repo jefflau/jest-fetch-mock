@@ -360,14 +360,23 @@ describe('request', () => {
     ).resolves.toEqual('dang')
   })
 
-  it('resolves with mocked response containing buffer', () => {
+  it('accepts a promise containing a repsonse containing a buffer', () => {
     fetch.mockResponseOnce(() => Promise.resolve(new Response(Buffer.from('foo'))))
     return expect(
       fetch('https://bar', {})
         .then((response) => response.arrayBuffer())
         .then((arrayBuffer) => new StringDecoder('utf8').write(new Uint8Array(arrayBuffer)))
     ).resolves.toEqual('foo')
-  });
+  })
+
+  it('accepts a response containing a buffer', () => {
+    fetch.mockResponseOnce(new Response(Buffer.from('foo')))
+    return expect(
+      fetch('https://bar', {})
+        .then((response) => response.arrayBuffer())
+        .then((arrayBuffer) => new StringDecoder('utf8').write(new Uint8Array(arrayBuffer)))
+    ).resolves.toEqual('foo')
+  })
 })
 
 describe('conditional mocking', () => {
