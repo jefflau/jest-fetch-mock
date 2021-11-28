@@ -8,9 +8,10 @@ fetchMock.mockResponse(JSON.stringify({foo: "bar"}), {
     ]
 });
 fetchMock.mockResponse(JSON.stringify({foo: "bar"}), {});
+fetchMock.mockResponse(new Response('foo'));
 fetchMock.mockResponse(someAsyncHandler);
 fetchMock.mockResponse(someAsyncStringHandler);
-fetchMock.mockResponse(someAsyncBufferHandler)
+fetchMock.mockResponse(someAsyncResponseHandler)
 
 fetchMock.mockResponseOnce(JSON.stringify({foo: "bar"}));
 fetchMock.mockResponseOnce(JSON.stringify({foo: "bar"}), {
@@ -20,9 +21,10 @@ fetchMock.mockResponseOnce(JSON.stringify({foo: "bar"}), {
     ]
 });
 fetchMock.mockResponseOnce(JSON.stringify({foo: "bar"}), {});
+fetchMock.mockResponseOnce(new Response('foo'));
 fetchMock.mockResponseOnce(someAsyncHandler);
 fetchMock.mockResponseOnce(someAsyncStringHandler);
-fetchMock.mockResponseOnce(someAsyncBufferHandler)
+fetchMock.mockResponseOnce(someAsyncResponseHandler)
 
 fetchMock.once(JSON.stringify({foo: "bar"}));
 fetchMock.once(JSON.stringify({foo: "bar"}), {
@@ -32,7 +34,9 @@ fetchMock.once(JSON.stringify({foo: "bar"}), {
     ]
 });
 fetchMock.once(JSON.stringify({foo: "bar"}), {});
+fetchMock.once(new Response('foo'));
 fetchMock.once(someAsyncHandler);
+fetchMock.once(someAsyncResponseHandler);
 
 fetchMock.mockResponses(JSON.stringify({}), JSON.stringify({foo: "bar"}));
 fetchMock.mockResponses(someAsyncHandler, someAsyncHandler);
@@ -40,12 +44,14 @@ fetchMock.mockResponses(JSON.stringify({}), someAsyncHandler);
 fetchMock.mockResponses(someAsyncHandler, JSON.stringify({}));
 fetchMock.mockResponses(someAsyncHandler);
 fetchMock.mockResponses([JSON.stringify({foo: "bar"}), {status: 200}]);
+fetchMock.mockResponses(new Response('foo'))
+fetchMock.mockResponses(JSON.stringify({}), new Response('foo'))
 fetchMock.mockResponses(
     someSyncHandler,
     someAsyncHandler,
     someSyncStringHandler,
     someAsyncStringHandler,
-    someAsyncBufferHandler,
+    someAsyncResponseHandler,
     [JSON.stringify({foo: "bar"}), {status: 200}]
 );
 
@@ -108,7 +114,7 @@ function someSyncStringHandler(): string {
     return JSON.stringify({foo: "bar"});
 }
 
-async function someAsyncBufferHandler(): Promise<Response> {
+async function someAsyncResponseHandler(): Promise<Response> {
     return new Response(Buffer.from('foo'));
 }
 
