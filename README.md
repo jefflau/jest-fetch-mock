@@ -9,156 +9,117 @@ It currently supports the mocking with the [`cross-fetch`](https://www.npmjs.com
 
 ## Contents
 
-- [Usage](#usage)
-  - [Installation and Setup](#package-installation)
-  - [Using with Create-React-App](#using-with-create-react-app)
+- [Install](#install)
+- [Configuration](#configuration)
+    - [Global Configuration](#global-configuration) (recommended)
+        - [Quick Start](#quick-start)
+    - [Per-test configuration](#per-test-configuration)
 - [API](#api)
 - [Examples](#examples)
-  - [Simple mock and assert](#simple-mock-and-assert)
-  - [Mocking all fetches](#mocking-all-fetches)
-  - [Mocking a failed fetch](#mocking-a-failed-fetch)
-  - [Mocking multiple fetches with different responses](#mocking-multiple-fetches-with-different-responses)
-  - [Mocking multiple fetches with `fetch.mockResponses`](#mocking-multiple-fetches-with-fetchmockresponses)
-  - [Reset mocks between tests with `fetch.resetMocks`](#reset-mocks-between-tests-with-fetchresetmocks)
-  - [Using `fetch.mock` to inspect the mock state of each fetch call](#using-fetchmock-to-inspect-the-mock-state-of-each-fetch-call)
-  - [Using functions to mock slow servers](#using-functions-to-mock-slow-servers)
+    - [Mock specific URLs only](#mock-specific-urls-only)
+    - [Simple mock and assert](#simple-mock-and-assert)
+    - [Mocking all fetches](#mocking-all-fetches)
+    - [Mocking a failed fetch](#mocking-a-failed-fetch)
+    - [Mocking multiple fetches with different responses](#mocking-multiple-fetches-with-different-responses)
+    - [Mocking multiple fetches with `fetch.mockResponses`](#mocking-multiple-fetches-with-fetchmockresponses)
+    - [Reset mocks between tests with `fetch.resetMocks`](#reset-mocks-between-tests-with-fetchresetmocks)
+    - [Using `fetch.mock` to inspect the mock state of each fetch call](#using-fetchmock-to-inspect-the-mock-state-of-each-fetch-call)
+    - [Using functions to mock slow servers](#using-functions-to-mock-slow-servers)
+- [Troubleshooting](#troubleshooting)
+    - [jest-fetch-mock does not mock fetch calls](#jest-fetch-mock-does-not-mock-fetch-calls)
+    - [Typescript `fetchMock` global does not exist](#typescript-fetchMock-global-does-not-exist)
+    - [Using with Create-React-App](#using-with-create-react-app)
+    - [For Ejected Create React Apps](#for-ejected-create-react-apps)
 
-## Usage
+## Install
 
-### Package Installation
+Install `jest-fetch-mock` in the normal way with [npm](https://www.npmjs.com/)
+or [yarn](https://yarnpkg.com/):
 
-To setup your fetch mock you need to do the following things:
-
-```
+```sh
 $ npm install --save-dev jest-fetch-mock
 ```
 
-Create a `setupJest` file to setup the mock or add this to an existing `setupFile`. :
+## Configuration
 
-### To setup for all tests
+### Global Configuration
+
+The recommended way is to globally enable `jest-fetch-mock`, ensuring the
+mock is available for each test.
+
+#### Quick Start
+1. Create `setupJest.js` loaded via the jest `setupFilesAfterEnv` config
+   variable.
+2. Have `setupJest.js` call `require('jest-fetch-mock').enableMocks();`.
+3. Do *not* `import fetch from "<fetchmodule>";` in non-test-code (fetch
+   *should* already be available globally).
+
+#### Long Start
+Add or edit your `setupJest.js` file (details below) so that it loads and
+enables `jest-fetch-mock`. Ensure that the `setupJest.js` file is called using
+jest's `setupFilesAfterEnv` configuration (and not via the `setupFiles`
+config).
+
+Done properly, this ensures that `fetch` and `fetchMock` are available at
+global scope, similar to how `jest` makes `expect()` and similar functions
+available everywhere in your test code. 
+
+This is because of how jest manages and resets mocks like `jest-fetch-mock`,
+meaning you may need to re-enable the fetchMock environment for each run of
+each test-file you have. You achieve this by doing one of:
+
+1. using jest's `setupFilesAfterEnv` configuration (recommended).
+2. making sure the `jest.enableMocks()` or `jest.enableFetchMocks()` call is
+   the first thing in the in the file (setting up the global env as above).
+
+> Note: jest's `resetMocks` configuration default changed from `false` to `true` in Jest 4.0.1.
+
+#### setupJest.js or similar file
 
 ```js
-//setupJest.js or similar file
-require('jest-fetch-mock').enableMocks()
+// Ensure `fetch` and `fetchMock` is available in the global scope in the
+// jest.
+require('jest-fetch-mock').enableMocks();
+
+// Optionally, to pass-thru to the original/raw fetch (until you want to
+// opt-in to use `jest-fetch-mock`), uncomment the following line and call
+// `fetchMock.doMock()` per test, e.g. in `beforeEach()`.
+// fetchMock.dontMock();
 ```
 
-Add the setupFile to your jest config in `package.json`:
+#### jest config (jest.config.js, package.json, etc.)
 
-```JSON
-"jest": {
-  "automock": false,
-  "resetMocks": false,
-  "setupFiles": [
-    "./setupJest.js"
-  ]
+Configure jest to load the `setupJest.js` in your `jest.config.js` (or in
+`package.json`, wherever you configure jest)
+
+```js
+module.exports = {
+  // Ensure the fetch-mocks are in the env for each test-file
+  setupFilesAfterEnv: [ "./setupJest.js", ],
+  // ...
 }
 ```
 
-With this done, you'll have `fetch` and `fetchMock` available on the global scope. Fetch will be used as usual by your code and you'll use `fetchMock` in your tests
+### Per-test configuration
 
-Note: the `resetMocks` Jest configuration default was changed from `false` to `true` in Jest 4.0.1.  Therefore the Jest configuration of setting it to `false` is required if the `setupJest.js` is what calls "enableMocks()" (i.e. in the above suggested setup) otherwise you will need to call "enableMocks()" in a "beforeEach" block.
+To ensure that `fetch` and `fetchMock` are available in the global-env for each
+imported/required file, the following line must be *first* in you (test) files. 
 
-#### Default not mocked
+NOTE: because the following may cause linting issues we recommend configuring
+jest-fetch-mock globally (as above).
 
-If you would like to have the 'fetchMock' available in all tests but not enabled then add `fetchMock.dontMock()` after the `...enableMocks()` line in `setupJest.js`:
-
+#### JavaScript
 ```js
-// adds the 'fetchMock' global variable and rewires 'fetch' global to call 'fetchMock' instead of the real implementation
-require('jest-fetch-mock').enableMocks()
-// changes default behavior of fetchMock to use the real 'fetch' implementation and not mock responses
-fetchMock.dontMock()
-```
-
-If you want a single test file to return to the default behavior of mocking all responses, add the following to the
-test file:
-
-```js
-beforeEach(() => {
-  // if you have an existing `beforeEach` just add the following line to it
-  fetchMock.doMock()
-})
-```
-
-To enable mocking for a specific URL only:
-
-```js
-beforeEach(() => {
-  // if you have an existing `beforeEach` just add the following lines to it
-  fetchMock.mockIf(/^https?:\/\/example.com.*$/, req => {
-    if (req.url.endsWith('/path1')) {
-      return 'some response body'
-    } else if (req.url.endsWith('/path2')) {
-      return {
-        body: 'another response body',
-        headers: {
-          'X-Some-Response-Header': 'Some header value'
-        }
-      }
-    } else {
-      return {
-        status: 404,
-        body: 'Not Found'
-      }
-    }
-  })
-})
-```
-
-If you have changed the default behavior to use the real implementation, you can guarantee the next call to fetch
-will be mocked by using the `mockOnce` function:
-
-```js
-fetchMock.mockOnce('the next call to fetch will always return this as the body')
-```
-
-This function behaves exactly like `fetchMock.once` but guarantees the next call to `fetch` will be mocked even if the
-default behavior of fetchMock is to use the real implementation. You can safely convert all you `fetchMock.once` calls
-to `fetchMock.mockOnce` without a risk of changing their behavior.
-
-### To setup for an individual test
-
-For JavaScript add the following line to the start of your test case (before any other requires)
-
-```js
+// must be first in file
 require('jest-fetch-mock').enableMocks()
 ```
 
-For TypeScript/ES6 add the following lines to the start of your test case (before any other imports)
+#### Typescript
 
 ```typescript
-import { enableFetchMocks } from 'jest-fetch-mock'
-enableFetchMocks()
-```
-
-#### TypeScript importing
-
-If you are using TypeScript and receive errors about the `fetchMock` global not existing,
-add a `global.d.ts` file to the root of your project (or add the following line to an existing global file):
-
-```typescript
-import 'jest-fetch-mock'
-```
-
-If you prefer you can also just import the fetchMock in a test case.
-
-```typescript
+// must be first in file
 import fetchMock from 'jest-fetch-mock'
-```
-
-You may also need to edit your `tsconfig.json` and add "dom" and/or "es2015" and/or "esnext" to the 'compilerConfig.lib' property
-
-### Using with Create-React-App
-
-If you are using [Create-React-App](https://github.com/facebookincubator/create-react-app) (CRA), the code for `setupJest.js` above should be placed into `src/setupTests.js` in the root of your project. CRA automatically uses this filename by convention in the Jest configuration it generates. Similarly, changing to your `package.json` is not required as CRA handles this when generating your Jest configuration.
-
-### For Ejected Create React Apps _ONLY_:
-
-> Note: Keep in mind that if you decide to "eject" before creating src/setupTests.js, the resulting package.json file won't contain any reference to it, so you should manually create the property setupTestFrameworkScriptFile in the configuration for Jest, something like the [following](https://github.com/facebook/create-react-app/blob/master/packages/react-scripts/template/README.md#srcsetuptestsjs-1):
-
-```JSON
-"jest": {
-  "setupTestFrameworkScriptFile": "<rootDir>/src/setupTests.js"
- }
+fetchMock.enableFetchMocks()
 ```
 
 ## API
@@ -231,7 +192,44 @@ or will return a [Mock Function](http://facebook.github.io/jest/docs/mock-functi
 
 ## Examples
 
-In most of the complicated examples below, I am testing my action creators in Redux, but it doesn't have to be used with Redux.
+NOTE: Some of the examples below use Redux, but Redux is not required.
+
+### Mock specific URLs only
+To enable mocking for a specific URL only:
+
+```js
+beforeEach(() => {
+  // if you have an existing `beforeEach` just add the following lines to it
+  fetchMock.mockIf(/^https?:\/\/example.com.*$/, req => {
+    if (req.url.endsWith('/path1')) {
+      return 'some response body'
+    } else if (req.url.endsWith('/path2')) {
+      return {
+        body: 'another response body',
+        headers: {
+          'X-Some-Response-Header': 'Some header value'
+        }
+      }
+    } else {
+      return {
+        status: 404,
+        body: 'Not Found'
+      }
+    }
+  })
+})
+```
+
+If you have changed the default behavior to use the real implementation, you can guarantee the next call to fetch
+will be mocked by using the `mockOnce` function:
+
+```js
+fetchMock.mockOnce('the next call to fetch will always return this as the body')
+```
+
+This function behaves exactly like `fetchMock.once` but guarantees the next call to `fetch` will be mocked even if the
+default behavior of fetchMock is to use the real implementation. You can safely convert all you `fetchMock.once` calls
+to `fetchMock.mockOnce` without a risk of changing their behavior.
 
 ### Simple mock and assert
 
@@ -1135,3 +1133,44 @@ describe('conditional mocking complex', () => {
   })
 })
 ```
+
+## Troubleshooting
+
+### jest-fetch-mock does not mock fetch calls
+If fetchMock is not working check that you do *not* have `import fetch from
+'cross-fetch'` or similar in your non-test code. This is because
+`jest-fetch-mock` modifies the global state and such imports may override the
+fetch-mocks.
+
+### Typescript fetchMock global does not exist
+
+If you are using Typescript and receive errors about the `fetchMock` global not
+existing, add a `global.d.ts` file to the root of your project (or add the
+following line to an existing global file):
+
+```typescript
+import 'jest-fetch-mock'
+```
+
+If you prefer you can also just import the fetchMock in a test case.
+
+```typescript
+import fetchMock from 'jest-fetch-mock'
+```
+
+You may also need to edit your `tsconfig.json` and add "dom" and/or "es2015" and/or "esnext" to the 'compilerConfig.lib' property
+
+### Using with Create-React-App
+
+If you are using [Create-React-App](https://github.com/facebookincubator/create-react-app) (CRA), the code for `setupJest.js` above should be placed into `src/setupTests.js` in the root of your project. CRA automatically uses this filename by convention in the Jest configuration it generates. Similarly, changing to your `package.json` is not required as CRA handles this when generating your Jest configuration.
+
+### For Ejected Create React Apps
+
+> Note: Keep in mind that if you decide to "eject" before creating src/setupTests.js, the resulting package.json file won't contain any reference to it, so you should manually create the property setupTestFrameworkScriptFile in the configuration for Jest, something like the [following](https://github.com/facebook/create-react-app/blob/master/packages/react-scripts/template/README.md#srcsetuptestsjs-1):
+
+```JSON
+"jest": {
+  "setupTestFrameworkScriptFile": "<rootDir>/src/setupTests.js"
+ }
+```
+
