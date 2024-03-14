@@ -1,4 +1,5 @@
 // TypeScript Version: 3.0
+/// <reference lib="dom" />
 import Global = NodeJS.Global;
 import "jest";
 
