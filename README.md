@@ -352,8 +352,8 @@ describe('Access token action creators', () => {
 Fetches can be mocked to act as if they were aborted during the request. This can be done in 4 ways:
 
 <ol>
-<li>Using `fetch.mockAborted()`</li>
-<li>Using `fetch.mockAbortedOnce()`</li>
+<li>Using `fetch.mockAbort()`</li>
+<li>Using `fetch.mockAbortOnce()`</li>
 <li>Passing a request (or request init) with a 'signal' to fetch that has been aborted</li>
 <li>Passing a request (or request init) with a 'signal' to fetch and a async function to `fetch.mockResponse` or `fetch.mockResponseOnce` that causes the signal to abort before returning the response</li>
 </ol>
