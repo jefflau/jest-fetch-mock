@@ -178,7 +178,7 @@ If you are using [Create-React-App](https://github.com/facebookincubator/create-
 ### Functions
 
 Instead of passing body, it is also possible to pass a function that returns a promise.
-The promise should resolve with a string or an object containing body and init props
+The promise should resolve with a string or an object containing body and init props, or a `Response` object.
 
 i.e:
 
@@ -186,6 +186,8 @@ i.e:
 fetch.mockResponse(() => callMyApi().then(res => ({ body: 'ok' })))
 // OR
 fetch.mockResponse(() => callMyApi().then(res => 'ok'))
+// OR
+fetch.mockResponse(() => callMyApi().then(res => new Response('foo')))
 ```
 
 The function may take an optional "request" parameter of type `http.Request`:
