@@ -1,6 +1,7 @@
 {
   "extends": "./types/tsconfig.json",
   "compilerOptions": {
+    "target": "ES2015",
     "baseUrl": ".",
     "rootDir": "./types",
     "paths": {

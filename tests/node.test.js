@@ -1,7 +1,9 @@
 /**
  * @jest-environment node
  */
-let DOMException = require('domexception')
+if (typeof DOMException === 'undefined') {
+  DOMException = require('domexception')
+}
 
 it('rejects with a dom exception', () => {
   fetch.mockAbort()

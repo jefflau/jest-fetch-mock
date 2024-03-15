@@ -273,4 +273,5 @@ fetch.disableMocks = fetch.disableFetchMocks = () => {
   }
 }
 
+Object.defineProperty(exports, '__esModule', { value: true })
 module.exports = fetch.default = fetch
