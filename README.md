@@ -161,6 +161,16 @@ If you are using [Create-React-App](https://github.com/facebookincubator/create-
  }
 ```
 
+### Usage with cross-mock ponyfills
+
+If you are using the [`cross-fetch`](https://github.com/lquixada/cross-fetch) [ponyfill](https://github.com/sindresorhus/ponyfill), set the jest mock directly rather than `enableFetchMock()`. Add the following lines to the start of your test case (before any other imports):
+
+``typescript
+// 
+import fetchMock from "jest-fetch-mock";
+jest.setMock("cross-fetch", fetchMock);
+```
+
 ## API
 
 ### Mock Responses
