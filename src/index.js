@@ -17,6 +17,10 @@ if (typeof DOMException === 'undefined') {
 const ActualResponse = Response
 
 function responseWrapper(body, init) {
+  if (body instanceof ActualResponse) {
+    return body;
+  }
+
   if (
     body &&
     typeof body.constructor === 'function' &&
