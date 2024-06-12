@@ -37,6 +37,33 @@ Create a `setupJest` file to setup the mock or add this to an existing `setupFil
 
 ### To setup for all tests
 
+The simplest setup is to use the [module](#module) system, you may also choose
+to create a [setup file](#setup-file) if needed.
+
+#### Module
+
+Add the setupFile to your jest config in `package.json` and include `jest-fetch-mock`:
+
+```JSON
+"jest": {
+  "setupFiles": [
+    "jest-fetch-mock"
+  ]
+}
+```
+
+If you already had `setupFiles` include `jest-fetch-mock` to your array:
+
+```JSON
+"jest": {
+  "setupFiles": [
+    "./setupJest.js",
+    "jest-fetch-mock"
+  ]
+}
+```
+
+#### Setup file
 ```js
 //setupJest.js or similar file
 require('jest-fetch-mock').enableMocks()
