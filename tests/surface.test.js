@@ -195,18 +195,17 @@ describe('mockResponses variants', () => {
 
 describe('conditional mocking without bodies', () => {
   const realResponse = 'REAL FETCH RESPONSE'
-  let crossFetchSpy
+  let realFetchBackup
 
   beforeEach(() => {
     fetch.resetMocks()
     fetch.mockResponse('gated')
-    crossFetchSpy = jest
-      .spyOn(require('cross-fetch'), 'fetch')
-      .mockImplementation(async () => new Response(realResponse))
+    realFetchBackup = fetch.realFetch
+    fetch.realFetch = jest.fn(async () => new Response(realResponse))
   })
 
   afterEach(() => {
-    crossFetchSpy.mockRestore()
+    fetch.realFetch = realFetchBackup
   })
 
   const text = (uri) => fetch(uri, {}).then((r) => r.text())

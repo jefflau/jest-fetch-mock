@@ -1,6 +1,8 @@
 tests
 integration
 yarn.lock
+AGENTS.md
+CLAUDE.md
 node_modules
 *.log
 coverage

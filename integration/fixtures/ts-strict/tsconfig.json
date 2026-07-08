@@ -3,10 +3,17 @@
     "strict": true,
     "target": "es2019",
     "module": "commonjs",
-    "lib": ["es2019"],
+    "lib": [
+      "es2019"
+    ],
     "esModuleInterop": true,
     "skipLibCheck": false,
-    "noEmit": true
+    "noEmit": true,
+    "typeRoots": [
+      "node_modules/@types"
+    ]
   },
-  "include": ["*.ts"]
+  "include": [
+    "*.ts"
+  ]
 }

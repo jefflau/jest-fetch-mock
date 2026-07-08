@@ -1,18 +1,14 @@
 {
   "compilerOptions": {
     "strict": true,
-    "target": "es2019",
-    "module": "commonjs",
+    "target": "es2020",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "lib": [
-      "es2019",
-      "dom"
+      "es2020"
     ],
-    "esModuleInterop": true,
     "skipLibCheck": false,
     "noEmit": true,
-    "types": [
-      "jest"
-    ],
     "typeRoots": [
       "node_modules/@types"
     ]

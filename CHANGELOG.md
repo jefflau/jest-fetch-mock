@@ -1,5 +1,32 @@
 # Changelog
 
+## 4.0.0-beta.1 (2026-07-08, `next` dist-tag)
+
+The modernization release. Headline: **jest-fetch-mock no longer replaces the global fetch classes with node-fetch implementations.**
+
+### Changed (breaking)
+
+- **Native fetch primitives.** In environments that provide `fetch`/`Response`/`Request`/`Headers` (jest-environment-node has since Jest 28), the mock builds on them and never replaces them — fixing the whole "the global `Response` broke my unrelated test" cluster (#218) and making `instanceof`, streams, `FormData`, and `Response.json()` behave natively. Where the environment has none (jest-environment-jsdom), the cross-fetch fallback engages exactly as before, filling only the missing globals.
+- `disableMocks()` restores the environment's original `fetch` (previously it installed cross-fetch's).
+- Support floor: **Node ≥ 18, Jest ≥ 28**. The 3.x line remains available for older stacks.
+- TypeScript definitions are **self-contained**: no `@types/jest` requirement (works with `@jest/globals`-only setups, #248) and no forced `dom` lib (#201). Ambient `Response`/`Request` types must come from your `lib: ["dom"]` or `@types/node` ≥ 18 — in practice, every Jest project has one of these.
+- Relative URL inputs in native mode resolve against `http://localhost/` for matching purposes (the native `Request` requires absolute URLs); jsdom-fallback behavior is unchanged.
+- `domexception` dependency removed (native since Node 17).
+
+### Added
+
+- **`createFetchMock(jest)`** factory, also available from the dependency-free entry `jest-fetch-mock/factory` — build an instance with an explicitly-passed jest object, for `injectGlobals: false` / `@jest/globals` setups.
+- **`"setupFiles": ["jest-fetch-mock/setup"]`** one-liner setup.
+- **`resetMocks: true` auto-re-arm** (#78, #81, #202): when `enableMocks()` runs where `beforeEach` exists (`setupFilesAfterEnv` or a test file), the default implementation is re-armed after Jest's config-driven reset. The years-old footgun is fixed — move your setup file to `setupFilesAfterEnv` to benefit.
+- **`AbortSignal.timeout()`** rejections carry the signal's `TimeoutError`; custom abort reasons pass through as-is (#242). Plain aborts keep the historical `AbortError` message.
+- **`fetchMock.defaultResponseInit`** — an init merged under every mocked response, e.g. default JSON headers (#166).
+- **`fetchMock.realFetch`** — the implementation unmatched requests pass through to, reassignable in tests; **`fetchMock.usingNativeFetch`** tells you which mode engaged.
+- ESM wrapper and an `exports` map (with a `./*` escape hatch so deep imports keep working); `url` and `counter` MockParams are patched onto native responses so `response.url`/`response.redirected` mocking still works.
+
+### Unchanged
+
+Every 3.x API call, alias, chaining behavior, once-queue semantics, and the abort error message. The whole 3.x test suite and all seven consumer integration fixtures run green against 4.0.
+
 ## 3.2.0 (2026-07-08)
 
 First release since 3.0.3 (March 2020). Everything merged to master in the intervening years ships in this release, plus a round of new fixes. Version 3.1.0 was tagged in 2024 but never published to npm; its contents are included here.

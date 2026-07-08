@@ -1,4 +1,18 @@
-import fm, { enableFetchMocks, disableFetchMocks, MockResponseInit } from 'jest-fetch-mock';
+import fm, {
+    enableFetchMocks,
+    disableFetchMocks,
+    createFetchMock,
+    FetchMock,
+    MockResponseInit,
+} from 'jest-fetch-mock';
+
+const fm3: FetchMock = createFetchMock({ fn: (impl?: (...args: any[]) => any) => impl });
+fm3.mockResponseOnce('x');
+const passthrough: (input: string | URL | Request, init?: RequestInit) => Promise<Response> = fm3.realFetch;
+fm3.realFetch = passthrough;
+const isNative: boolean = fm3.usingNativeFetch;
+fm3.defaultResponseInit = { headers: { 'Content-Type': 'application/json' } };
+fm3.defaultResponseInit = undefined;
 
 fetchMock.mockResponse(JSON.stringify({foo: "bar"}));
 fetchMock.mockResponse(JSON.stringify({foo: "bar"}), {

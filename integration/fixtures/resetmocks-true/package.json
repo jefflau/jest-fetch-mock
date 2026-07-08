@@ -1,0 +1,15 @@
+{
+  "name": "fixture-resetmocks-true",
+  "private": true,
+  "scripts": {
+    "test": "jest"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "resetMocks": true,
+    "setupFilesAfterEnv": ["./setupJest.js"]
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}

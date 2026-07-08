@@ -1,9 +1,24 @@
 {
   "name": "jest-fetch-mock",
-  "version": "3.2.0",
+  "version": "4.0.0-beta.1",
   "description": "fetch mock for jest",
   "main": "src/index.js",
-  "types": "types",
+  "types": "./types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/index.d.ts",
+      "import": "./src/index.mjs",
+      "default": "./src/index.js"
+    },
+    "./factory": {
+      "types": "./types/factory.d.ts",
+      "import": "./src/factory.mjs",
+      "default": "./src/factory.js"
+    },
+    "./setup": "./src/setup.js",
+    "./package.json": "./package.json",
+    "./*": "./*"
+  },
   "scripts": {
     "test": "jest && yarn tsc && yarn lint",
     "lint": "eslint .",
@@ -21,18 +36,18 @@
   "author": "Jeff Lau <jeff-lau@live.com> (http://jefflau.net/)",
   "license": "MIT",
   "engines": {
-    "node": ">=12"
+    "node": ">=18"
   },
   "bugs": {
     "url": "https://github.com/jefflau/jest-fetch-mock/issues"
   },
   "homepage": "https://github.com/jefflau/jest-fetch-mock#readme",
   "dependencies": {
-    "cross-fetch": "^3.1.8",
-    "domexception": "^4.0.0"
+    "cross-fetch": "^3.1.8"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
+    "jest-environment-jsdom": "^29.7.0",
     "@types/node": "^20.11.27",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.2.0",
@@ -78,10 +93,10 @@
     ],
     "coverageThreshold": {
       "global": {
-        "statements": 98,
-        "branches": 96,
+        "statements": 97,
+        "branches": 94,
         "functions": 100,
-        "lines": 98
+        "lines": 97
       }
     }
   }

@@ -2,7 +2,7 @@
   "name": "fixture-ts-strict",
   "private": true,
   "scripts": {
-    "test": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.nonode.json && jest"
+    "test": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.nonode.json && tsc --noEmit -p tsconfig.nodenext.json && jest"
   },
   "jest": {
     "preset": "ts-jest",

@@ -241,7 +241,8 @@ describe('request', () => {
     })
 
     const response = await request()
-    expect(response.type).toBe(contentType)
+    // undici serializes the MIME type without the space, node-fetch keeps it
+    expect(response.type.replace('; ', ';')).toBe('text/csv;charset=utf-8')
     expect(fetch).toHaveBeenCalledWith('https://randomuser.me/api', {})
   })
 
@@ -377,20 +378,17 @@ describe('conditional mocking', () => {
   const realResponse = 'REAL FETCH RESPONSE'
   const mockedDefaultResponse = 'MOCKED DEFAULT RESPONSE'
   const testUrl = defaultRequestUri
-  let crossFetchSpy
+  let realFetchBackup
 
   beforeEach(() => {
     fetch.resetMocks()
     fetch.mockResponse(mockedDefaultResponse)
-    crossFetchSpy = jest
-      .spyOn(require('cross-fetch'), 'fetch')
-      .mockImplementation(async () =>
-        Promise.resolve(new Response(realResponse))
-      )
+    realFetchBackup = fetch.realFetch
+    fetch.realFetch = jest.fn(async () => new Response(realResponse))
   })
 
   afterEach(() => {
-    crossFetchSpy.mockRestore()
+    fetch.realFetch = realFetchBackup
   })
 
   const expectMocked = async (uri, response = mockedDefaultResponse) => {
