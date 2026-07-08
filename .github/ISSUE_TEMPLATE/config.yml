@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Question / how do I…?
+    url: https://github.com/jefflau/jest-fetch-mock#recipes-and-common-gotchas
+    about: The README's recipes section answers the most common questions (JSON bodies, per-endpoint mocks, resetMocks, ponyfills).
+  - name: Using Vitest?
+    url: https://github.com/IanVS/vitest-fetch-mock
+    about: vitest-fetch-mock is the maintained fork for Vitest.
