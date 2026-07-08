@@ -20,6 +20,9 @@
   ],
   "author": "Jeff Lau <jeff-lau@live.com> (http://jefflau.net/)",
   "license": "MIT",
+  "engines": {
+    "node": ">=12"
+  },
   "bugs": {
     "url": "https://github.com/jefflau/jest-fetch-mock/issues"
   },
