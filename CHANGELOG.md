@@ -1,6 +1,6 @@
 # Changelog
 
-## 3.2.0 (unreleased)
+## 3.2.0 (2026-07-08)
 
 First release since 3.0.3 (March 2020). Everything merged to master in the intervening years ships in this release, plus a round of new fixes. Version 3.1.0 was tagged in 2024 but never published to npm; its contents are included here.
 
