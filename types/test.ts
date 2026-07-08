@@ -13,6 +13,9 @@ fm3.realFetch = passthrough;
 const isNative: boolean = fm3.usingNativeFetch;
 fm3.defaultResponseInit = { headers: { 'Content-Type': 'application/json' } };
 fm3.defaultResponseInit = undefined;
+fetchMock.Response.redirect('https://x.test/', 301);
+fetchMock.Response.error();
+fetchMock.Response.json?.({ a: 1 });
 
 fetchMock.mockResponse(JSON.stringify({foo: "bar"}));
 fetchMock.mockResponse(JSON.stringify({foo: "bar"}), {

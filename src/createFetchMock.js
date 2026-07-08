@@ -223,6 +223,14 @@ function createFetchMock(jestLike) {
   fetch.Headers = primitives.Headers
   fetch.Response = responseWrapper
   fetch.Request = ActualRequest
+  // expose the backing class's statics through the wrapper; json only
+  // exists on native Response, not node-fetch 2 (#191)
+  for (const staticMethod of ['error', 'redirect', 'json']) {
+    if (typeof ActualResponse[staticMethod] === 'function') {
+      responseWrapper[staticMethod] =
+        ActualResponse[staticMethod].bind(ActualResponse)
+    }
+  }
   // the implementation unmatched requests pass through to; reassignable in
   // tests that want to stub the real network
   fetch.realFetch = primitives.fetch

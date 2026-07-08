@@ -98,6 +98,28 @@ describe('relative URLs in native mode', () => {
   })
 })
 
+describe('Response wrapper statics', () => {
+  it('exposes redirect and error from the backing class', () => {
+    const redirect = fetch.Response.redirect('https://elsewhere.test/', 301)
+    expect(redirect.status).toBe(301)
+    expect(redirect.headers.get('location')).toBe('https://elsewhere.test/')
+    const error = fetch.Response.error()
+    expect(error.type).toBe('error')
+  })
+
+  it('exposes the native json static where available', async () => {
+    const response = fetch.Response.json({ a: 1 })
+    await expect(response.json()).resolves.toEqual({ a: 1 })
+  })
+
+  it('redirect responses can be served as mocks', async () => {
+    fetch.mockResponseOnce(fetch.Response.redirect('https://moved.test/', 302))
+    const response = await fetch('https://old.test/')
+    expect(response.status).toBe(302)
+    expect(response.headers.get('location')).toBe('https://moved.test/')
+  })
+})
+
 describe('createFetchMock factory', () => {
   it('builds an isolated instance from an injected jest object', async () => {
     const createFetchMock = require('jest-fetch-mock/factory')
