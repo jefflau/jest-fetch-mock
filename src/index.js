@@ -103,7 +103,15 @@ const abortAsync = () => {
 const toPromise = (val) => (val instanceof Promise ? val : Promise.resolve(val))
 
 const normalizeResponse = (bodyOrFunction, init) => (input, reqInit) => {
-  const [mocked, request] = isMocking(input, reqInit)
+  let mockResult
+  try {
+    mockResult = isMocking(input, reqInit)
+  } catch (error) {
+    // fetch() never throws synchronously: an already-aborted signal or
+    // unparseable input must surface as a rejected promise
+    return Promise.reject(error)
+  }
+  const [mocked, request] = mockResult
   return mocked
     ? isFn(bodyOrFunction)
       ? toPromise(bodyOrFunction(request)).then((resp) => {
