@@ -127,6 +127,16 @@ export interface FetchMock extends FetchMockInstance {
     dontMockOnceIf(urlOrPredicate: UrlOrPredicate, response: string, responseInit?: MockParams): FetchMock;
     dontMockOnceIf(urlOrPredicate: UrlOrPredicate, response: Response): FetchMock;
 
+    // Route registry (4.2+): registered matcher->response pairs that coexist.
+    // Precedence: once-queue > routes > conditional gate + ambient response.
+    route(urlOrPredicate: UrlOrPredicate, fn: MockResponseInitFunction): FetchMock;
+    route(urlOrPredicate: UrlOrPredicate, response?: string | Response, responseInit?: MockParams): FetchMock;
+
+    routeOnce(urlOrPredicate: UrlOrPredicate, fn: MockResponseInitFunction): FetchMock;
+    routeOnce(urlOrPredicate: UrlOrPredicate, response?: string | Response, responseInit?: MockParams): FetchMock;
+
+    clearRoutes(): FetchMock;
+
     resetMocks(): void;
     enableMocks(): FetchMock;
     disableMocks(): FetchMock;

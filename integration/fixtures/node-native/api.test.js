@@ -30,6 +30,16 @@ describe('node environment consumer (native fetch host)', () => {
     expect(Buffer.from(buf).toString('utf8')).toBe('binary')
   })
 
+  it('route registry serves coexisting endpoint mocks', async () => {
+    fetchMock
+      .route('https://api.example.com/users', JSON.stringify([{ id: 1 }]))
+      .routeOnce('https://api.example.com/login', '', { status: 401 })
+    const users = await (await fetch('https://api.example.com/users')).json()
+    expect(users).toEqual([{ id: 1 }])
+    expect((await fetch('https://api.example.com/login')).status).toBe(401)
+    expect((await fetch('https://api.example.com/login')).status).toBe(200)
+  })
+
   it('disableMocks leaves a callable non-mock fetch', () => {
     fetchMock.disableMocks()
     expect(typeof fetch).toBe('function')
