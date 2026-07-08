@@ -7,5 +7,5 @@ if (typeof DOMException === 'undefined') {
 
 it('rejects with a dom exception', () => {
   fetch.mockAbort()
-  expect(fetch('/')).rejects.toThrow(expect.any(DOMException))
+  return expect(fetch('/')).rejects.toThrow(expect.any(DOMException))
 })

@@ -1,0 +1,14 @@
+{
+  "name": "fixture-jest30",
+  "private": true,
+  "scripts": {
+    "test": "jest"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "setupFiles": ["./setupJest.js"]
+  },
+  "devDependencies": {
+    "jest": "^30.0.0"
+  }
+}

@@ -29,8 +29,7 @@
   "homepage": "https://github.com/jefflau/jest-fetch-mock#readme",
   "dependencies": {
     "cross-fetch": "^3.1.8",
-    "domexception": "^4.0.0",
-    "promise-polyfill": "^8.3.0"
+    "domexception": "^4.0.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",
@@ -64,10 +63,26 @@
   "jest": {
     "automock": false,
     "testPathIgnorePatterns": [
-      "types"
+      "types",
+      "integration"
     ],
     "setupFiles": [
       "./setupJest.js"
-    ]
+    ],
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "src/**/*.js"
+    ],
+    "coverageReporters": [
+      "text-summary"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "statements": 98,
+        "branches": 96,
+        "functions": 100,
+        "lines": 98
+      }
+    }
   }
 }

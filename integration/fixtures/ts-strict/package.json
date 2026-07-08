@@ -1,0 +1,19 @@
+{
+  "name": "fixture-ts-strict",
+  "private": true,
+  "scripts": {
+    "test": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.nonode.json && jest"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "setupFiles": ["./setupJest.js"]
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^22.0.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.4.0"
+  }
+}

@@ -4,12 +4,6 @@ global.Response = crossFetch.Response
 global.Headers = crossFetch.Headers
 global.Request = crossFetch.Request
 
-if (typeof Promise === 'undefined') {
-  Promise = require('promise-polyfill')
-} else if (!('finally' in Promise) || typeof Promise.finally === 'undefined') {
-  Promise.finally = require('promise-polyfill').finally
-}
-
 if (typeof DOMException === 'undefined') {
   DOMException = require('domexception')
 }
@@ -73,9 +67,9 @@ function requestMatches(urlOrPredicate) {
 
 function requestNotMatches(urlOrPredicate) {
   const matches = requestMatches(urlOrPredicate)
-  return (input) => {
-    const result = matches(input)
-    return [!result[0], result[1]]
+  return (input, reqInit) => {
+    const [matched, request] = matches(input, reqInit)
+    return [!matched, request]
   }
 }
 
@@ -125,13 +119,9 @@ const normalizeResponse = (bodyOrFunction, init) => (input, reqInit) => {
             ? responseWrapper(resp, init)
             : responseWrapper(resp.body, responseInit(resp, init))
         })
-      : new Promise((resolve, reject) => {
-          if (request.signal && request.signal.aborted) {
-            reject(abortError())
-            return
-          }
-          resolve(responseWrapper(bodyOrFunction, init))
-        })
+      : // an aborted signal has already rejected in the isMocking call above,
+        // so the static body can resolve unconditionally
+        Promise.resolve(responseWrapper(bodyOrFunction, init))
     : crossFetch.fetch(input, reqInit)
 }
 
@@ -141,19 +131,20 @@ const normalizeRequest = (input, reqInit) => {
       abort()
     }
     return input
-  } else if (typeof input === 'string') {
-    if (reqInit && reqInit.signal && reqInit.signal.aborted) {
-      abort()
-    }
-    return new Request(input, reqInit)
-  } else if (typeof input.toString === 'function') {
-    if (reqInit && reqInit.signal && reqInit.signal.aborted) {
-      abort()
-    }
-    return new Request(input.toString(), reqInit)
-  } else {
+  }
+  const url =
+    typeof input === 'string'
+      ? input
+      : input != null && typeof input.toString === 'function'
+      ? input.toString()
+      : null
+  if (url === null) {
     throw new TypeError('Unable to parse input as string or Request')
   }
+  if (reqInit && reqInit.signal && reqInit.signal.aborted) {
+    abort()
+  }
+  return new Request(url, reqInit)
 }
 
 const normalizeError = (errorOrFunction) =>
@@ -198,67 +189,39 @@ fetch.mockResponses = (...responses) => {
 
 fetch.isMocking = (req, reqInit) => isMocking(req, reqInit)[0]
 
-fetch.mockIf = fetch.doMockIf = (urlOrPredicate, bodyOrFunction, init) => {
-  isMocking.mockImplementation(requestMatches(urlOrPredicate))
+// every conditional mock is the same operation: install a matcher on
+// isMocking (persistently or for one call) and optionally set a response
+// with the same persistence
+const configureMocking = (once, matcher, bodyOrFunction, init) => {
+  isMocking[once ? 'mockImplementationOnce' : 'mockImplementation'](matcher)
   if (bodyOrFunction) {
-    fetch.mockResponse(bodyOrFunction, init)
+    const respond = once ? mockResponseOnce : fetch.mockResponse
+    respond(bodyOrFunction, init)
   }
   return fetch
 }
 
-fetch.dontMockIf = (urlOrPredicate, bodyOrFunction, init) => {
-  isMocking.mockImplementation(requestNotMatches(urlOrPredicate))
-  if (bodyOrFunction) {
-    fetch.mockResponse(bodyOrFunction, init)
-  }
-  return fetch
-}
+fetch.mockIf = fetch.doMockIf = (urlOrPredicate, body, init) =>
+  configureMocking(false, requestMatches(urlOrPredicate), body, init)
 
-fetch.mockOnceIf = fetch.doMockOnceIf = (
-  urlOrPredicate,
-  bodyOrFunction,
-  init
-) => {
-  isMocking.mockImplementationOnce(requestMatches(urlOrPredicate))
-  if (bodyOrFunction) {
-    mockResponseOnce(bodyOrFunction, init)
-  }
-  return fetch
-}
+fetch.dontMockIf = (urlOrPredicate, body, init) =>
+  configureMocking(false, requestNotMatches(urlOrPredicate), body, init)
 
-fetch.dontMockOnceIf = (urlOrPredicate, bodyOrFunction, init) => {
-  isMocking.mockImplementationOnce(requestNotMatches(urlOrPredicate))
-  if (bodyOrFunction) {
-    mockResponseOnce(bodyOrFunction, init)
-  }
-  return fetch
-}
+fetch.mockOnceIf = fetch.doMockOnceIf = (urlOrPredicate, body, init) =>
+  configureMocking(true, requestMatches(urlOrPredicate), body, init)
 
-fetch.dontMock = () => {
-  isMocking.mockImplementation(staticMatches(false))
-  return fetch
-}
+fetch.dontMockOnceIf = (urlOrPredicate, body, init) =>
+  configureMocking(true, requestNotMatches(urlOrPredicate), body, init)
 
-fetch.dontMockOnce = () => {
-  isMocking.mockImplementationOnce(staticMatches(false))
-  return fetch
-}
+fetch.doMock = (body, init) =>
+  configureMocking(false, staticMatches(true), body, init)
 
-fetch.doMock = (bodyOrFunction, init) => {
-  isMocking.mockImplementation(staticMatches(true))
-  if (bodyOrFunction) {
-    fetch.mockResponse(bodyOrFunction, init)
-  }
-  return fetch
-}
+fetch.mockOnce = fetch.doMockOnce = (body, init) =>
+  configureMocking(true, staticMatches(true), body, init)
 
-fetch.mockOnce = fetch.doMockOnce = (bodyOrFunction, init) => {
-  isMocking.mockImplementationOnce(staticMatches(true))
-  if (bodyOrFunction) {
-    mockResponseOnce(bodyOrFunction, init)
-  }
-  return fetch
-}
+fetch.dontMock = () => configureMocking(false, staticMatches(false))
+
+fetch.dontMockOnce = () => configureMocking(true, staticMatches(false))
 
 fetch.resetMocks = () => {
   fetch.mockReset()
@@ -267,7 +230,6 @@ fetch.resetMocks = () => {
   // reset to default implementation with each reset
   fetch.mockImplementation(normalizeResponse(''))
   fetch.doMock()
-  fetch.isMocking = (req, reqInit) => isMocking(req, reqInit)[0]
 }
 
 fetch.enableMocks = fetch.enableFetchMocks = () => {
