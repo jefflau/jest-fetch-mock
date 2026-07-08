@@ -1,8 +1,8 @@
 # Changelog
 
-## 4.0.0-beta.1 (2026-07-08, `next` dist-tag)
+## 4.0.0 (2026-07-08)
 
-The modernization release. Headline: **jest-fetch-mock no longer replaces the global fetch classes with node-fetch implementations.**
+The modernization release (published as `4.0.0-beta.1` earlier the same day; identical content). Headline: **jest-fetch-mock no longer replaces the global fetch classes with node-fetch implementations.**
 
 ### Changed (breaking)
 
