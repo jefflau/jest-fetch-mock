@@ -6,7 +6,7 @@
 
 Fetch is the canonical way to do HTTP requests in the browser, and it can be used in other environments such as Node.js and React Native. Jest Fetch Mock allows you to easily mock your `fetch` calls and return the response you need to fake the HTTP requests. It's easy to set up and you don't need a library like `nock` to get going, and it uses Jest's built-in support for mocking under the surface. This means that any of the `jest.fn()` methods are also available. For more information on the Jest mock API, check the docs [here](https://jestjs.io/docs/mock-functions).
 
-It currently works by mocking the [`cross-fetch`](https://www.npmjs.com/package/cross-fetch) polyfill, so it supports Node.js and any browser-like runtime.
+It builds on the environment's own fetch primitives wherever they exist (Node 18+, Jest 28+ — your mocked responses are real native `Response` objects), and falls back to the bundled [`cross-fetch`](https://www.npmjs.com/package/cross-fetch) classes only in environments without fetch, such as `jest-environment-jsdom`.
 
 > **Using Vitest?** Use the actively maintained fork [`vitest-fetch-mock`](https://github.com/IanVS/vitest-fetch-mock) instead.
 >
@@ -46,20 +46,28 @@ To setup your fetch mock you need to do the following things:
 $ npm install --save-dev jest-fetch-mock
 ```
 
-Create a `setupJest.js` file (or add to an existing setup file) to set up the mock:
+The simplest setup is the bundled one-liner in `setupFilesAfterEnv`:
+
+```JSON
+"jest": {
+  "automock": false,
+  "setupFilesAfterEnv": [
+    "jest-fetch-mock/setup"
+  ]
+}
+```
+
+Or with your own setup file (if you have one already, add the `enableMocks()` line to it):
 
 ```js
 //setupJest.js or similar file
 require('jest-fetch-mock').enableMocks()
 ```
 
-Add the setup file to your Jest config in `package.json`:
-
 ```JSON
 "jest": {
   "automock": false,
-  "resetMocks": false,
-  "setupFiles": [
+  "setupFilesAfterEnv": [
     "./setupJest.js"
   ]
 }
@@ -67,19 +75,19 @@ Add the setup file to your Jest config in `package.json`:
 
 With this done, you'll have `fetch` and `fetchMock` available on the global scope. Fetch will be used as usual by your code and you'll use `fetchMock` in your tests.
 
+`setupFiles` also works, with one caveat worth knowing:
+
 > ⚠️ **The `resetMocks` gotcha — read this if `fetch()` mysteriously returns `undefined`.**
 >
-> If your Jest config sets `resetMocks: true` (Create React App does this by default since CRA 4.0.1), Jest wipes the mock's implementation before every test — after your setup file ran. `fetch` is then an empty `jest.fn()` and every call resolves to `undefined`.
+> If your Jest config sets `resetMocks: true` (Create React App does this by default since CRA 4.0.1), Jest wipes the mock's implementation before every test — after your setup ran, historically leaving `fetch` as an empty `jest.fn()` resolving `undefined`. This was the single most-reported issue with this library (#81, #78, #104, #202).
 >
-> Fix either by setting `"resetMocks": false` in your Jest config (as shown above), or by re-enabling the mock before each test:
+> Since 4.0 the mock re-arms itself automatically — **as long as `enableMocks()` runs from `setupFilesAfterEnv`** (as shown above) or a test file. If you must use `setupFiles` (which runs before the test framework, where the re-arm hook can't be registered), either set `"resetMocks": false` or re-enable per test:
 >
 > ```js
 > beforeEach(() => {
->   fetchMock.enableMocks() // or: fetch.resetMocks()
+>   fetchMock.enableMocks()
 > })
 > ```
->
-> This is the single most-reported issue with this library (#81, #78, #104, #202).
 
 #### Default not mocked
 
@@ -151,7 +159,7 @@ enableFetchMocks()
 
 ### Using with TypeScript
 
-The package ships its own type definitions — no `@types/jest-fetch-mock` needed. It does rely on the `jest` global namespace, so have [`@types/jest`](https://www.npmjs.com/package/@types/jest) installed.
+The package ships its own type definitions — no `@types/jest-fetch-mock` needed, and since 4.0 no dependency on `@types/jest` either (the mock surface is declared structurally, so `@jest/globals`-only projects type-check cleanly). The definitions need ambient fetch types from either `lib: ["dom"]` or `@types/node` ≥ 18 — every Jest project has one of these.
 
 If you receive errors about the `fetchMock` global not existing, add a `global.d.ts` file to the root of your project (or add the following line to an existing global file):
 
@@ -410,7 +418,7 @@ Fetches can be mocked to act as if they were aborted during the request. This ca
 3. Passing a request (or request init) with an already-aborted 'signal' to fetch
 4. Passing a request (or request init) with a 'signal' to fetch and an async function to `fetch.mockResponse` or `fetch.mockResponseOnce` that causes the signal to abort before returning the response
 
-In every case the fetch promise rejects with an `AbortError` `DOMException` whose message is "The operation was aborted." (Before 3.2.0, case 3 threw synchronously instead of rejecting; it now rejects, matching the fetch spec.)
+In every case the fetch promise rejects with an `AbortError` `DOMException` whose message is "The operation was aborted." (Before 3.2.0, case 3 threw synchronously instead of rejecting; it now rejects, matching the fetch spec.) Since 4.0, a signal aborted with a custom reason rejects with that reason as-is, and an `AbortSignal.timeout()` signal rejects with its `TimeoutError`.
 
 ```js
 describe('Mocking aborts', () => {
@@ -458,7 +466,7 @@ describe('Mocking aborts', () => {
 
 ### Mocking a redirected response
 
-Set the counter option >= 1 in the response init object to mock a [redirected response](https://developer.mozilla.org/en-US/docs/Web/API/Response/redirected). Note, this will only work in Node.js as it's a feature of [node-fetch's response class](https://github.com/node-fetch/node-fetch/blob/2.x/src/response.js).
+Set the counter option >= 1 in the response init object to mock a [redirected response](https://developer.mozilla.org/en-US/docs/Web/API/Response/redirected). (Since 4.0 this works in every environment — the flag is applied to the mocked response directly. You can also set `url` in the init to control `response.url`.)
 
 ```js
 fetchMock.mockResponse("<main></main>", {
@@ -713,19 +721,17 @@ describe('conditional mocking', () => {
   const realResponse = 'REAL FETCH RESPONSE'
   const mockedDefaultResponse = 'MOCKED DEFAULT RESPONSE'
   const testUrl = defaultRequestUri
-  let crossFetchSpy
+  let realFetchBackup
   beforeEach(() => {
     fetch.resetMocks()
     fetch.mockResponse(mockedDefaultResponse)
-    crossFetchSpy = jest
-      .spyOn(require('cross-fetch'), 'fetch')
-      .mockImplementation(async () =>
-        Promise.resolve(new Response(realResponse))
-      )
+    // stub the "real" side by swapping the passthrough target
+    realFetchBackup = fetchMock.realFetch
+    fetchMock.realFetch = jest.fn(async () => new Response(realResponse))
   })
 
   afterEach(() => {
-    crossFetchSpy.mockRestore()
+    fetchMock.realFetch = realFetchBackup
   })
 
   const expectMocked = async (uri, response = mockedDefaultResponse) => {
