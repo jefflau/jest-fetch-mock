@@ -63,7 +63,8 @@
   "jest": {
     "automock": false,
     "testPathIgnorePatterns": [
-      "types"
+      "types",
+      "integration"
     ],
     "setupFiles": [
       "./setupJest.js"

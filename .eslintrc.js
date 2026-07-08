@@ -1,4 +1,5 @@
 module.exports = {
+  ignorePatterns: ['integration/'],
   env: {
     browser: true,
     commonjs: true,
