@@ -1,5 +1,13 @@
 # Changelog
 
+## 4.2.0 (2026-07-08)
+
+### Added
+
+- **Route-based mocking** ([#171]): `fetchMock.route(urlOrPredicate, bodyOrFunction?, init?)` and `routeOnce(...)` register matcher→response pairs that coexist, plus `clearRoutes()`. First registered match serves. Precedence: queued once-responses > routes > the conditional gate and ambient `mockResponse`; a matching route fires even under `dontMock()` (mock only known endpoints, let the rest hit the network); `mockReject`/`mockAbort` override routes. `resetMocks()` clears routes.
+
+[#171]: https://github.com/jefflau/jest-fetch-mock/issues/171
+
 ## 4.1.0 (2026-07-08)
 
 ### Added

@@ -17,6 +17,13 @@ fetchMock.Response.redirect('https://x.test/', 301);
 fetchMock.Response.error();
 fetchMock.Response.json?.({ a: 1 });
 
+fetchMock.route('https://api.test/users', JSON.stringify([{ id: 1 }]));
+fetchMock.route(/teams$/, 'body', { status: 201 });
+fetchMock.route((req: Request) => req.method === 'POST', someAsyncHandler);
+fetchMock.route('https://api.test/empty');
+fetchMock.routeOnce('https://api.test/login', new Response('', { status: 401 }));
+fetchMock.route('https://a.test/', 'a').routeOnce('https://b.test/', 'b').clearRoutes();
+
 fetchMock.mockResponse(JSON.stringify({foo: "bar"}));
 fetchMock.mockResponse(JSON.stringify({foo: "bar"}), {
     status: 200,

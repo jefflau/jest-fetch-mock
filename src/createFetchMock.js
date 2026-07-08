@@ -154,13 +154,33 @@ function createFetchMock(jestLike) {
     return buildRequest(url, reqInit)
   }
 
+  const toPredicate = (urlOrPredicate) =>
+    urlOrPredicate instanceof RegExp
+      ? (input) => urlOrPredicate.test(input.url)
+      : typeof urlOrPredicate === 'string'
+      ? (input) => input.url === urlOrPredicate
+      : urlOrPredicate
+
+  // registered routes: consulted by the persistent implementations before
+  // the conditional gate - first registered match serves (#171). The once
+  // queue (mockResponseOnce and friends) still takes precedence because a
+  // queued implementation replaces the whole call.
+  const routes = []
+
+  const findRoute = (request) => {
+    for (let i = 0; i < routes.length; i++) {
+      if (routes[i].predicate(request)) {
+        const route = routes[i]
+        if (route.once) {
+          routes.splice(i, 1)
+        }
+        return route
+      }
+    }
+  }
+
   function requestMatches(urlOrPredicate) {
-    const predicate =
-      urlOrPredicate instanceof RegExp
-        ? (input) => urlOrPredicate.test(input.url)
-        : typeof urlOrPredicate === 'string'
-        ? (input) => input.url === urlOrPredicate
-        : urlOrPredicate
+    const predicate = toPredicate(urlOrPredicate)
     return (input, reqInit) => {
       const req = normalizeRequest(input, reqInit)
       return [predicate(req), req]
@@ -189,34 +209,52 @@ function createFetchMock(jestLike) {
 
   const abortAsync = () => Promise.reject(abortError())
 
-  const normalizeResponse = (bodyOrFunction, init) => (input, reqInit) => {
-    let mockResult
-    try {
-      mockResult = isMocking(input, reqInit)
-    } catch (error) {
+  const respondWith = (bodyOrFunction, init, request) =>
+    isFn(bodyOrFunction)
+      ? toPromise(bodyOrFunction(request)).then((resp) => {
+          if (request.signal && request.signal.aborted) {
+            throw abortError(request.signal)
+          }
+          if (resp instanceof ActualResponse) {
+            return resp
+          }
+          return typeof resp === 'string'
+            ? responseWrapper(resp, withDefaults(init))
+            : responseWrapper(resp.body, responseInit(resp, init))
+        })
+      : Promise.resolve(responseWrapper(bodyOrFunction, withDefaults(init)))
+
+  const normalizeResponse =
+    (bodyOrFunction, init, consultRoutes) => (input, reqInit) => {
       // fetch() never throws synchronously: an already-aborted signal or
       // unparseable input must surface as a rejected promise
-      return Promise.reject(error)
+      let request
+      try {
+        request = normalizeRequest(input, reqInit)
+      } catch (error) {
+        return Promise.reject(error)
+      }
+      // a matching route serves regardless of the conditional gate, so
+      // routes stay useful when the default is dontMock'd
+      if (consultRoutes) {
+        const route = findRoute(request)
+        if (route) {
+          return respondWith(route.bodyOrFunction, route.init, request)
+        }
+      }
+      let mockResult
+      try {
+        mockResult = isMocking(input, reqInit)
+      } catch (error) {
+        return Promise.reject(error)
+      }
+      const [mocked, mockedRequest] = mockResult
+      return mocked
+        ? respondWith(bodyOrFunction, init, mockedRequest)
+        : fetch.realFetch(input, reqInit)
     }
-    const [mocked, request] = mockResult
-    return mocked
-      ? isFn(bodyOrFunction)
-        ? toPromise(bodyOrFunction(request)).then((resp) => {
-            if (request.signal && request.signal.aborted) {
-              throw abortError(request.signal)
-            }
-            if (resp instanceof ActualResponse) {
-              return resp
-            }
-            return typeof resp === 'string'
-              ? responseWrapper(resp, withDefaults(init))
-              : responseWrapper(resp.body, responseInit(resp, init))
-          })
-        : Promise.resolve(responseWrapper(bodyOrFunction, withDefaults(init)))
-      : fetch.realFetch(input, reqInit)
-  }
 
-  const defaultImplementation = normalizeResponse('')
+  const defaultImplementation = normalizeResponse('', undefined, true)
 
   const fetch = jestLike.fn(defaultImplementation)
   fetch.mockImplementation(defaultImplementation)
@@ -239,7 +277,7 @@ function createFetchMock(jestLike) {
   fetch.usingNativeFetch = !primitives.usingFallback
 
   fetch.mockResponse = (bodyOrFunction, init) =>
-    fetch.mockImplementation(normalizeResponse(bodyOrFunction, init))
+    fetch.mockImplementation(normalizeResponse(bodyOrFunction, init, true))
 
   fetch.mockReject = (errorOrFunction) =>
     fetch.mockImplementation(
@@ -251,8 +289,10 @@ function createFetchMock(jestLike) {
   fetch.mockAbort = () => fetch.mockImplementation(abortAsync)
   fetch.mockAbortOnce = () => fetch.mockImplementationOnce(abortAsync)
 
+  // once implementations skip the route scan: an explicitly queued
+  // next-call response outranks any registered route
   const mockResponseOnce = (bodyOrFunction, init) =>
-    fetch.mockImplementationOnce(normalizeResponse(bodyOrFunction, init))
+    fetch.mockImplementationOnce(normalizeResponse(bodyOrFunction, init, false))
 
   fetch.mockResponseOnce = mockResponseOnce
   fetch.once = mockResponseOnce
@@ -268,11 +308,36 @@ function createFetchMock(jestLike) {
     responses.forEach((response) => {
       if (Array.isArray(response)) {
         const [body, init] = response
-        fetch.mockImplementationOnce(normalizeResponse(body, init))
+        fetch.mockImplementationOnce(normalizeResponse(body, init, false))
       } else {
-        fetch.mockImplementationOnce(normalizeResponse(response))
+        fetch.mockImplementationOnce(normalizeResponse(response, undefined, false))
       }
     })
+    return fetch
+  }
+
+  fetch.route = (urlOrPredicate, bodyOrFunction, init) => {
+    routes.push({
+      predicate: toPredicate(urlOrPredicate),
+      bodyOrFunction: bodyOrFunction === undefined ? '' : bodyOrFunction,
+      init,
+      once: false,
+    })
+    return fetch
+  }
+
+  fetch.routeOnce = (urlOrPredicate, bodyOrFunction, init) => {
+    routes.push({
+      predicate: toPredicate(urlOrPredicate),
+      bodyOrFunction: bodyOrFunction === undefined ? '' : bodyOrFunction,
+      init,
+      once: true,
+    })
+    return fetch
+  }
+
+  fetch.clearRoutes = () => {
+    routes.length = 0
     return fetch
   }
 
@@ -315,6 +380,7 @@ function createFetchMock(jestLike) {
   fetch.resetMocks = () => {
     fetch.mockReset()
     isMocking.mockReset()
+    routes.length = 0
 
     // reset to default implementation with each reset
     fetch.mockImplementation(defaultImplementation)

@@ -21,6 +21,7 @@ It builds on the environment's own fetch primitives wherever they exist (Node 18
   - [A note on Node's built-in fetch](#a-note-on-nodes-built-in-fetch)
   - [Migrating from 3.x](#migrating-from-3x)
 - [API](#api)
+  - [Routes](#routes)
 - [Examples](#examples)
   - [Simple mock and assert](#simple-mock-and-assert)
   - [Mocking all fetches](#mocking-all-fetches)
@@ -299,10 +300,39 @@ fetch.mockReject(req =>
 - `fetch.enableMocks()` - Enable fetch mocking by overriding `global.fetch` and mocking `node-fetch`
 - `fetch.disableMocks()` - Disable fetch mocking and restore the environment's original `fetch`
 - `fetch.mock` - The mock state for your fetch calls. Make assertions on the arguments given to `fetch` when called by the functions you are testing. For more information check the [Jest docs](https://jestjs.io/docs/mock-functions#mock-property)
+- `fetch.route(urlOrPredicate, bodyOrFunction?, init?)` / `fetch.routeOnce(...)` / `fetch.clearRoutes()` - Route-based mocking, see [Routes](#routes)
 - `fetch.realFetch` - The implementation unmatched (dont-mocked) requests pass through to; reassign it in a test to stub the "real" side
 - `fetch.defaultResponseInit` - Optional init merged under every mocked response's own init — e.g. `fetchMock.defaultResponseInit = { headers: { 'Content-Type': 'application/json' } }` to default every mock to JSON
 - `fetch.usingNativeFetch` - `true` when the environment's own fetch primitives are in use, `false` when the jsdom fallback engaged
 - `createFetchMock(jest)` - Build an isolated instance from an explicitly-passed jest object (also importable dependency-free from `jest-fetch-mock/factory`)
+
+### Routes
+
+Since 4.2 you can register several matcher→response pairs that **coexist** — no more choosing between one big switch function and `mockIf` calls that replace each other:
+
+```js
+fetchMock
+  .route('https://api.example.com/session', JSON.stringify({ user: 'jeff' }))
+  .route(/\/teams$/, JSON.stringify([{ id: 42 }]))
+  .route((req) => req.method === 'POST', async (req) => ({
+    status: 201,
+    body: await req.text(),
+  }))
+```
+
+- Matchers are the same shapes as `mockIf`: exact URL string, RegExp, or a `(request) => boolean` predicate. First registered match wins.
+- The response side accepts everything `mockResponse` does: a string, a `Response`, or a sync/async function receiving the `Request`. Omit it for the default empty 200.
+- `routeOnce(...)` registers a route that is consumed by its first match.
+- `clearRoutes()` removes all routes; `resetMocks()` clears them too.
+
+**Precedence**: an explicitly queued once-response (`mockResponseOnce`/`once`) outranks routes for that call; a matching route outranks the ambient `mockResponse` body *and* the conditional gate — so routes still fire when the default is `dontMock()`, which makes them the clean way to mock only known endpoints and let everything else hit the network:
+
+```js
+fetchMock.dontMock() // everything real...
+fetchMock.route('https://api.example.com/flags', '{"beta":true}') // ...except this
+```
+
+`mockReject()`/`mockAbort()` replace the whole implementation and override routes. Routes compose across setup: register base routes in a `beforeEach` and add per-test ones inside the test.
 
 For information on the arguments body and init can take, you can look at the MDN docs on the Response Constructor function, which `jest-fetch-mock` uses under the surface:
 
