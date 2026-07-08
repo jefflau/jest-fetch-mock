@@ -1,22 +1,20 @@
-# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
-# then publish the resulting package to NPM js
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+# Runs the test suite (jest, tsc, eslint) across supported Node versions
 
 name: Node.js CI
 
 on:
   push:
+    branches: [ master ]
   pull_request:
-      branches: [ master ]
+    branches: [ master ]
 
 jobs:
-  build:
-
+  test:
     runs-on: ubuntu-latest
 
     strategy:
       matrix:
-        node-version: [16.x, 18.x, 20.x]
+        node-version: [18.x, 20.x, 22.x, 24.x]
 
     steps:
     - uses: actions/checkout@v4
@@ -24,7 +22,8 @@ jobs:
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
-    - run: npm install
-    - run: npm test
+        cache: yarn
+    - run: yarn install --frozen-lockfile
+    - run: yarn test
       env:
         CI: true
