@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "es2020",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "lib": ["es2020"],
+    "skipLibCheck": false,
+    "noEmit": true
+  },
+  "include": ["*.ts"]
+}

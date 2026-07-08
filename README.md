@@ -19,6 +19,7 @@ It currently works by mocking the [`cross-fetch`](https://www.npmjs.com/package/
   - [Using with TypeScript](#using-with-typescript)
   - [Using with Create-React-App](#using-with-create-react-app)
   - [A note on Node's built-in fetch](#a-note-on-nodes-built-in-fetch)
+  - [Migrating from 3.x](#migrating-from-3x)
 - [API](#api)
 - [Examples](#examples)
   - [Simple mock and assert](#simple-mock-and-assert)
@@ -187,7 +188,38 @@ Note that CRA ≥ 4.0.1 generates a Jest config with `resetMocks: true` — see 
 
 ### A note on Node's built-in fetch
 
-Node.js 18+ ships a native `fetch` (via undici). In its current major version, this library replaces the global `fetch`, `Response`, `Request` and `Headers` with implementations from `cross-fetch` (node-fetch under Node) while mocks are enabled. That's fine for the overwhelming majority of tests, but if your code depends on undici-specific classes or behavior — `instanceof` checks against the native classes, web `ReadableStream` bodies, `FormData` uploads — you may notice differences (see #218). Rearchitecting around the environment's native fetch without touching unrelated globals is the headline change planned for v4.
+Since 4.0, this library builds on the environment's **own** fetch primitives whenever they exist — under `jest-environment-node` (Jest 28+, Node 18+) your mocked `Response`s are real native (undici) responses, `instanceof` checks work, and nothing your tests didn't ask for is touched. Where the environment provides no fetch (`jest-environment-jsdom`), the bundled cross-fetch fallback fills exactly the missing globals, as it always did. `fetchMock.usingNativeFetch` tells you which mode you're in.
+
+### Migrating from 3.x
+
+4.0 keeps every 3.x API. Things to check when upgrading:
+
+- **Floors**: Node ≥ 18 and Jest ≥ 28 (stay on 3.2.0 for older stacks).
+- In node environments, mocked responses are now **native** `Response` objects. If a test asserted node-fetch-specific details, it may need a touch-up (e.g. MIME types serialize as `text/csv;charset=utf-8`, without the space).
+- `disableMocks()` now restores the environment's original `fetch` rather than cross-fetch's.
+- Relative URLs (`fetch('/api')`) in **node** environments resolve against `http://localhost/` for match predicates; in jsdom the fallback behaves as before.
+- TypeScript: the types no longer force the `dom` lib onto your compilation and no longer require `@types/jest` — but they do need ambient fetch types from either `lib: ["dom"]` or `@types/node` ≥ 18.
+- If you use `resetMocks: true` in your Jest config, move `enableMocks()` to `setupFilesAfterEnv` and the old "fetch returns undefined" footgun disappears entirely.
+
+#### `injectGlobals: false` / `@jest/globals`
+
+The main entry needs the global `jest` object at import time. If you run with `injectGlobals: false`, build your instance explicitly:
+
+```js
+import { jest } from '@jest/globals'
+import createFetchMock from 'jest-fetch-mock/factory'
+
+const fetchMock = createFetchMock(jest)
+fetchMock.enableMocks()
+```
+
+#### One-liner setup
+
+```JSON
+"jest": {
+  "setupFilesAfterEnv": ["jest-fetch-mock/setup"]
+}
+```
 
 ## API
 
@@ -257,8 +289,12 @@ fetch.mockReject(req =>
 
 - `fetch.resetMocks()` - Clear previously set mocks so they do not bleed into other mocks
 - `fetch.enableMocks()` - Enable fetch mocking by overriding `global.fetch` and mocking `node-fetch`
-- `fetch.disableMocks()` - Disable fetch mocking and restore the default implementation of `fetch` and/or `node-fetch`
+- `fetch.disableMocks()` - Disable fetch mocking and restore the environment's original `fetch`
 - `fetch.mock` - The mock state for your fetch calls. Make assertions on the arguments given to `fetch` when called by the functions you are testing. For more information check the [Jest docs](https://jestjs.io/docs/mock-functions#mock-property)
+- `fetch.realFetch` - The implementation unmatched (dont-mocked) requests pass through to; reassign it in a test to stub the "real" side
+- `fetch.defaultResponseInit` - Optional init merged under every mocked response's own init — e.g. `fetchMock.defaultResponseInit = { headers: { 'Content-Type': 'application/json' } }` to default every mock to JSON
+- `fetch.usingNativeFetch` - `true` when the environment's own fetch primitives are in use, `false` when the jsdom fallback engaged
+- `createFetchMock(jest)` - Build an isolated instance from an explicitly-passed jest object (also importable dependency-free from `jest-fetch-mock/factory`)
 
 For information on the arguments body and init can take, you can look at the MDN docs on the Response Constructor function, which `jest-fetch-mock` uses under the surface:
 
@@ -821,7 +857,7 @@ jest.setMock('cross-fetch', fetchMock) // and/or 'node-fetch' (done automaticall
 
 ### "jest is not defined"
 
-`jest-fetch-mock` calls `jest.fn()` on import, so it can only be imported where Jest's globals exist: test files, `setupFiles`, or `setupFilesAfterEach` — not in `globalSetup`, custom sequencers, or plain Node scripts ([#104](https://github.com/jefflau/jest-fetch-mock/issues/104)). If this appears after a dependency update, also try clearing the watcher/cache: `npx jest --clearCache`.
+`jest-fetch-mock` calls `jest.fn()` on import, so it can only be imported where Jest's globals exist: test files, `setupFiles`, or `setupFilesAfterEnv` — not in `globalSetup`, custom sequencers, or plain Node scripts ([#104](https://github.com/jefflau/jest-fetch-mock/issues/104)). For `injectGlobals: false` setups, use `createFetchMock` from `jest-fetch-mock/factory`, which imports cleanly anywhere. If the error appears after a dependency update, also try clearing the watcher/cache: `npx jest --clearCache`.
 
 ### Binary responses
 

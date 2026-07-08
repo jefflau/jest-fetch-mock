@@ -1,14 +1,10 @@
-// TypeScript Version: 3.0
-/// <reference types="jest" />
-/// <reference lib="dom" />
+// Self-contained definitions: no dependency on @types/jest's global namespace
+// and no forced dom lib. Response/Request/Headers/RequestInit resolve from
+// whichever ambient environment the consumer has (lib "dom" or @types/node 18+).
 
 declare global {
-    const fetchMock: FetchMock;
-    namespace NodeJS {
-        interface Global {
-            fetch: FetchMock;
-        }
-    }
+    // eslint-disable-next-line no-var -- `var` is the correct TS idiom for globalThis properties
+    var fetchMock: FetchMock;
 }
 
 /**
@@ -21,10 +17,46 @@ export interface GlobalWithFetchMock {
     [key: string]: any;
 }
 
-export interface FetchMock
-    extends jest.MockInstance<Promise<Response>, [string | Request | undefined, RequestInit | undefined]> {
-    (input: string | Request, init?: RequestInit): Promise<Response>;
+export type FetchInput = string | URL | Request;
+export type FetchImplementation = (input: FetchInput, init?: RequestInit) => Promise<Response>;
+export type FetchMockCallArgs = [FetchInput?, (RequestInit | undefined)?];
 
+export interface FetchMockResult {
+    type: "return" | "throw" | "incomplete";
+    value: unknown;
+}
+
+export interface FetchMockState {
+    calls: FetchMockCallArgs[];
+    results: FetchMockResult[];
+    instances: unknown[];
+    contexts: unknown[];
+    lastCall?: FetchMockCallArgs;
+    invocationCallOrder: number[];
+}
+
+/** The jest-mock surface of the fetch mock, declared structurally so no @types/jest is required. */
+export interface FetchMockInstance {
+    (input: FetchInput, init?: RequestInit): Promise<Response>;
+
+    mock: FetchMockState;
+    mockClear(): this;
+    mockReset(): this;
+    mockRestore(): void;
+    getMockImplementation(): FetchImplementation | undefined;
+    mockImplementation(fn: FetchImplementation): this;
+    mockImplementationOnce(fn: FetchImplementation): this;
+    mockName(name: string): this;
+    getMockName(): string;
+    mockReturnValue(value: Promise<Response>): this;
+    mockReturnValueOnce(value: Promise<Response>): this;
+    mockResolvedValue(value: Response): this;
+    mockResolvedValueOnce(value: Response): this;
+    mockRejectedValue(value: unknown): this;
+    mockRejectedValueOnce(value: unknown): this;
+}
+
+export interface FetchMock extends FetchMockInstance {
     // Response mocking
     mockResponse(fn: MockResponseInitFunction): FetchMock;
     mockResponse(response: string, responseInit?: MockParams): FetchMock;
@@ -49,7 +81,7 @@ export interface FetchMock
     mockAbortOnce(): FetchMock;
 
     // Conditional Mocking
-    isMocking(input: string | Request): boolean;
+    isMocking(input: FetchInput): boolean;
 
     doMock(fn?: MockResponseInitFunction): FetchMock;
     doMock(response: string, responseInit?: MockParams): FetchMock;
@@ -96,8 +128,21 @@ export interface FetchMock
     dontMockOnceIf(urlOrPredicate: UrlOrPredicate, response: Response): FetchMock;
 
     resetMocks(): void;
-    enableMocks(): void;
-    disableMocks(): void;
+    enableMocks(): FetchMock;
+    disableMocks(): FetchMock;
+    enableFetchMocks(): FetchMock;
+    disableFetchMocks(): FetchMock;
+
+    /** The implementation unmatched (dontMock'd) requests pass through to. Reassignable in tests. */
+    realFetch: FetchImplementation;
+    /** Optional init merged under every mocked response's own init - e.g. default headers. */
+    defaultResponseInit: MockParams | undefined;
+    /** True when the environment's own fetch primitives are in use (no fallback engaged). */
+    usingNativeFetch: boolean;
+
+    Headers: typeof Headers;
+    Request: typeof Request;
+    Response: (body?: unknown, init?: MockParams) => Response;
 }
 
 export interface MockParams {
@@ -105,7 +150,7 @@ export interface MockParams {
     statusText?: string;
     headers?: string[][] | { [key: string]: string }; // HeadersInit
     url?: string;
-    /** Set >= 1 to have redirected return true. Only applicable to Node.js */
+    /** Set >= 1 to have redirected return true. */
     counter?: number;
 }
 
@@ -121,10 +166,24 @@ export type MockResponseInitFunction = (
     request: Request
 ) => MockResponseInit | string | Response | Promise<MockResponseInit | string | Response>;
 
+/** Anything with a jest-compatible mock-function factory (the jest object itself qualifies). */
+export interface MockFunctionFactory {
+    fn(implementation?: (...args: any[]) => any): any;
+    setMock?(moduleName: string, moduleExports: unknown): unknown;
+    dontMock?(moduleName: string): unknown;
+}
+
+/**
+ * Build a FetchMock bound to an explicitly provided jest object - for
+ * `injectGlobals: false` setups: pass the `jest` imported from '@jest/globals'.
+ * Also available dependency-free from 'jest-fetch-mock/factory'.
+ */
+export function createFetchMock(jestLike: MockFunctionFactory): FetchMock;
+
 // alias of fetchMock.enableMocks() for ES6 import syntax to not clash with other libraries
-export function enableFetchMocks(): void;
+export function enableFetchMocks(): FetchMock;
 // alias of fetchMock.disableMocks() for ease of ES6 import syntax to not clash with other libraries
-export function disableFetchMocks(): void;
+export function disableFetchMocks(): FetchMock;
 
 declare const fetchMock: FetchMock;
 

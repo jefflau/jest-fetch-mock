@@ -3,7 +3,7 @@
     "strict": true,
     "target": "es2019",
     "module": "commonjs",
-    "lib": ["es2019"],
+    "lib": ["es2019", "dom"],
     "esModuleInterop": true,
     "skipLibCheck": false,
     "noEmit": true,
