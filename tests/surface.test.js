@@ -281,6 +281,14 @@ describe('conditional mocking without bodies', () => {
     await expect(text('https://any.test/')).resolves.toBe('once-body')
     await expect(text('https://any.test/')).resolves.toBe(realResponse)
   })
+
+  it('dontMockIf predicates receive the request init', async () => {
+    fetch.dontMockIf((req) => req.method === 'POST')
+    await expect(
+      fetch('https://any.test/', { method: 'POST' }).then((r) => r.text())
+    ).resolves.toBe(realResponse)
+    await expect(text('https://any.test/')).resolves.toBe('gated')
+  })
 })
 
 describe('exposed API', () => {
