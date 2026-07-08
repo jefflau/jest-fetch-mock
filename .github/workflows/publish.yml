@@ -1,28 +1,48 @@
-# This workflow will do a clean install of node dependencies and publishes via npm
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+# Publishes to npm when a version tag (v*) is pushed, using OIDC trusted publishing:
+# https://docs.npmjs.com/trusted-publishers
+# Prerelease tags (e.g. v3.2.0-beta.1) publish to the "next" dist-tag; stable tags to "latest".
+# The npm package's Trusted Publisher must be configured for this repo and workflow file.
 
-name: Node.js Publish CI
+name: Publish to npm
 
 on:
-  pull_request:
-    types: [ closed ]
-    branches: [ master ]
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+  id-token: write
 
 jobs:
-  build:
-    if: github.event.pull_request.merged == true
+  publish:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 20.x
+          node-version: 24.x
           registry-url: 'https://registry.npmjs.org'
-      - run: npm install
+      - name: Ensure npm supports trusted publishing
+        run: |
+          npm install -g npm@latest
+          npm --version
+      - run: yarn install --frozen-lockfile
+      - run: yarn test
         env:
           CI: true
-      - run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_API_KEY }}
+      - name: Check tag matches package.json version
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+            echo "package.json version ($PKG_VERSION) does not match tag ($TAG_VERSION)" >&2
+            exit 1
+          fi
+      - name: Publish
+        run: |
+          case "$GITHUB_REF_NAME" in
+            *-*) npm publish --tag next ;;
+            *)   npm publish ;;
+          esac
