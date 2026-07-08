@@ -1,3 +1,4 @@
+const { StringDecoder } = require('string_decoder')
 const { APIRequest, APIRequest2, defaultRequestUri, request } = require('./api')
 
 describe('testing mockResponse and alias once', () => {
@@ -140,10 +141,10 @@ describe('Mocking aborts', () => {
     await expect(request()).resolves.toEqual('')
   })
 
-  it('throws when passed an already aborted abort signal in the request init', () => {
+  it('rejects when passed an already aborted abort signal in the request init', () => {
     const c = new AbortController()
     c.abort()
-    expect(() => fetch('/', { signal: c.signal })).toThrow(
+    return expect(fetch('/', { signal: c.signal })).rejects.toThrow(
       expect.any(DOMException)
     )
   })
@@ -357,6 +358,30 @@ describe('request', () => {
     return expect(
       fetch('https://bar', {}).then((response) => response.headers.get('ding'))
     ).resolves.toEqual('dang')
+  })
+
+  it('accepts a function that resolves with a Response', () => {
+    fetch.mockResponseOnce(() =>
+      Promise.resolve(new Response(Buffer.from('foo')))
+    )
+    return expect(
+      fetch('https://bar', {})
+        .then((response) => response.arrayBuffer())
+        .then((arrayBuffer) =>
+          new StringDecoder('utf8').write(new Uint8Array(arrayBuffer))
+        )
+    ).resolves.toEqual('foo')
+  })
+
+  it('accepts a Response', () => {
+    fetch.mockResponseOnce(new Response(Buffer.from('foo')))
+    return expect(
+      fetch('https://bar', {})
+        .then((response) => response.arrayBuffer())
+        .then((arrayBuffer) =>
+          new StringDecoder('utf8').write(new Uint8Array(arrayBuffer))
+        )
+    ).resolves.toEqual('foo')
   })
 })
 

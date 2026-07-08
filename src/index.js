@@ -17,6 +17,10 @@ if (typeof DOMException === 'undefined') {
 const ActualResponse = Response
 
 function responseWrapper(body, init) {
+  if (body instanceof ActualResponse) {
+    return body
+  }
+
   if (
     body &&
     typeof body.constructor === 'function' &&
@@ -99,12 +103,23 @@ const abortAsync = () => {
 const toPromise = (val) => (val instanceof Promise ? val : Promise.resolve(val))
 
 const normalizeResponse = (bodyOrFunction, init) => (input, reqInit) => {
-  const [mocked, request] = isMocking(input, reqInit)
+  let mockResult
+  try {
+    mockResult = isMocking(input, reqInit)
+  } catch (error) {
+    // fetch() never throws synchronously: an already-aborted signal or
+    // unparseable input must surface as a rejected promise
+    return Promise.reject(error)
+  }
+  const [mocked, request] = mockResult
   return mocked
     ? isFn(bodyOrFunction)
       ? toPromise(bodyOrFunction(request)).then((resp) => {
           if (request.signal && request.signal.aborted) {
             abort()
+          }
+          if (resp instanceof ActualResponse) {
+            return resp
           }
           return typeof resp === 'string'
             ? responseWrapper(resp, init)
