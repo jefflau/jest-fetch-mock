@@ -4,9 +4,16 @@
     "target": "es2020",
     "module": "nodenext",
     "moduleResolution": "nodenext",
-    "lib": ["es2020"],
+    "lib": [
+      "es2020"
+    ],
     "skipLibCheck": false,
-    "noEmit": true
+    "noEmit": true,
+    "typeRoots": [
+      "node_modules/@types"
+    ]
   },
-  "include": ["*.ts"]
+  "include": [
+    "*.ts"
+  ]
 }

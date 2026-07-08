@@ -14,7 +14,8 @@ describe('TypeScript strict consumer', () => {
   it('global fetchMock is typed', async () => {
     fetchMock.mockResponseOnce(JSON.stringify({ n: 1 }));
     const res = await fetch('https://example.com');
-    const data: { n: number } = await res.json();
+    // with node types (no dom lib), json() is Promise<unknown> per undici-types
+    const data = (await res.json()) as { n: number };
     expect(data.n).toBe(1);
   });
 

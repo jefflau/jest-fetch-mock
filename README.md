@@ -198,7 +198,7 @@ Since 4.0, this library builds on the environment's **own** fetch primitives whe
 - In node environments, mocked responses are now **native** `Response` objects. If a test asserted node-fetch-specific details, it may need a touch-up (e.g. MIME types serialize as `text/csv;charset=utf-8`, without the space).
 - `disableMocks()` now restores the environment's original `fetch` rather than cross-fetch's.
 - Relative URLs (`fetch('/api')`) in **node** environments resolve against `http://localhost/` for match predicates; in jsdom the fallback behaves as before.
-- TypeScript: the types no longer force the `dom` lib onto your compilation and no longer require `@types/jest` — but they do need ambient fetch types from either `lib: ["dom"]` or `@types/node` ≥ 18.
+- TypeScript: the types no longer force the `dom` lib onto your compilation and no longer require `@types/jest` — but they do need ambient fetch types from either `lib: ["dom"]` or `@types/node` ≥ 18. Note that under node types (no `dom` lib), `response.json()` is `Promise<unknown>` per undici-types — annotate or cast the result. Previously the forced `dom` lib masked this as `Promise<any>`.
 - If you use `resetMocks: true` in your Jest config, move `enableMocks()` to `setupFilesAfterEnv` and the old "fetch returns undefined" footgun disappears entirely.
 
 #### `injectGlobals: false` / `@jest/globals`
