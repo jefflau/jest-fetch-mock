@@ -17,6 +17,10 @@ if (typeof DOMException === 'undefined') {
 const ActualResponse = Response
 
 function responseWrapper(body, init) {
+  if (body instanceof ActualResponse) {
+    return body
+  }
+
   if (
     body &&
     typeof body.constructor === 'function' &&
@@ -105,6 +109,9 @@ const normalizeResponse = (bodyOrFunction, init) => (input, reqInit) => {
       ? toPromise(bodyOrFunction(request)).then((resp) => {
           if (request.signal && request.signal.aborted) {
             abort()
+          }
+          if (resp instanceof ActualResponse) {
+            return resp
           }
           return typeof resp === 'string'
             ? responseWrapper(resp, init)
