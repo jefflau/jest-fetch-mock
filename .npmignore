@@ -5,3 +5,10 @@ node_modules
 coverage
 .idea
 .vscode
+.github
+.editorconfig
+.eslintrc.js
+.prettierignore
+tsconfig.json
+types/test.ts
+types/tsconfig.json
