@@ -68,6 +68,21 @@
     ],
     "setupFiles": [
       "./setupJest.js"
-    ]
+    ],
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "src/**/*.js"
+    ],
+    "coverageReporters": [
+      "text-summary"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "statements": 93,
+        "branches": 85,
+        "functions": 95,
+        "lines": 93
+      }
+    }
   }
 }

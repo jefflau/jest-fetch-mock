@@ -42,9 +42,7 @@ describe('testing mockResponse and alias once', () => {
   })
 
   it('mocks a response with alias .once', async () => {
-    fetch.mockResponseOnce(
-      JSON.stringify({ secret_data: 'abcde' }, { status: 200 })
-    )
+    fetch.once(JSON.stringify({ secret_data: 'abcde' }, { status: 200 }))
 
     const response = await APIRequest('google')
 
@@ -90,11 +88,11 @@ describe('testing mockResponse and alias once', () => {
       JSON.stringify({ secret_data: 'abcde' }, { status: 200 })
     )
 
-    const response = await APIRequest('instagram')
+    const response = await APIRequest('bing')
 
     expect(response).toEqual({ secret_data: 'abcde' })
     expect(fetch.mock.calls.length).toEqual(1)
-    expect(fetch.mock.calls[0][0]).toEqual(new URL('https://instagram.com'))
+    expect(fetch.mock.calls[0][0].toString()).toEqual('https://bing.com')
   });
 })
 
@@ -133,7 +131,7 @@ describe('Mocking aborts', () => {
 
   it('rejects with a dom exception', () => {
     fetch.mockAbort()
-    expect(fetch('/')).rejects.toThrow(expect.any(DOMException))
+    return expect(fetch('/')).rejects.toThrow(expect.any(DOMException))
   })
   it('rejects once then mocks with empty response', async () => {
     fetch.mockAbortOnce()
@@ -242,13 +240,8 @@ describe('request', () => {
       },
     })
 
-    try {
-      const response = await request()
-      expect(response.type).toBe(contentType)
-    } catch (e) {
-      console.log(e)
-    }
-
+    const response = await request()
+    expect(response.type).toBe(contentType)
     expect(fetch).toHaveBeenCalledWith('https://randomuser.me/api', {})
   })
 
@@ -307,14 +300,9 @@ describe('request', () => {
       () =>
         new Promise((_, reject) =>
           setTimeout(() => reject(JSON.stringify(errorData)))
-        ),
-      100
+        )
     )
-    try {
-      await request()
-    } catch (error) {
-      expect(error.message).toBe(errorData.error)
-    }
+    await expect(request()).rejects.toThrow(errorData.error)
   })
 
   it('resolves with function returning object body and init headers', async () => {
@@ -771,6 +759,4 @@ it('enable/disable', () => {
   expect(jest.isMockFunction(fetch)).toBe(false)
   jestFetchMock.enableMocks()
   expect(jest.isMockFunction(fetch)).toBe(true)
-  jestFetchMock.disableMocks()
-  global.fetch = jestFetchMock
 })

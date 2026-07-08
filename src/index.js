@@ -125,13 +125,9 @@ const normalizeResponse = (bodyOrFunction, init) => (input, reqInit) => {
             ? responseWrapper(resp, init)
             : responseWrapper(resp.body, responseInit(resp, init))
         })
-      : new Promise((resolve, reject) => {
-          if (request.signal && request.signal.aborted) {
-            reject(abortError())
-            return
-          }
-          resolve(responseWrapper(bodyOrFunction, init))
-        })
+      : // an aborted signal has already rejected in the isMocking call above,
+        // so the static body can resolve unconditionally
+        Promise.resolve(responseWrapper(bodyOrFunction, init))
     : crossFetch.fetch(input, reqInit)
 }
 
