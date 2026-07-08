@@ -1,5 +1,17 @@
 # Changelog
 
+## 4.1.0 (2026-07-08)
+
+### Added
+
+- `fetchMock.Response.redirect()`, `.error()` and (on native fetch) `.json()` statics are exposed through the Response wrapper ([#191])
+
+### Docs
+
+- README fully aligned with 4.0 (native-primitives intro, `setupFilesAfterEnv` one-liner as the primary setup, rewritten `resetMocks` note around the auto-re-arm, self-contained types, redirected mocking works everywhere, `realFetch` in examples)
+
+[#191]: https://github.com/jefflau/jest-fetch-mock/issues/191
+
 ## 4.0.0 (2026-07-08)
 
 The modernization release (published as `4.0.0-beta.1` earlier the same day; identical content). Headline: **jest-fetch-mock no longer replaces the global fetch classes with node-fetch implementations.**

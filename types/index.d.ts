@@ -142,7 +142,13 @@ export interface FetchMock extends FetchMockInstance {
 
     Headers: typeof Headers;
     Request: typeof Request;
-    Response: (body?: unknown, init?: MockParams) => Response;
+    Response: {
+        (body?: unknown, init?: MockParams): Response;
+        redirect(url: string | URL, status?: number): Response;
+        error(): Response;
+        /** Present when the backing Response class provides it (native fetch; not node-fetch 2). */
+        json?(data: unknown, init?: ResponseInit): Response;
+    };
 }
 
 export interface MockParams {
