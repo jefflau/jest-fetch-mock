@@ -3,3 +3,5 @@ npm-debug.log
 yarn-error.log
 coverage
 .idea
+integration/fixtures/*/package-lock.json
+jest-fetch-mock-*.tgz
