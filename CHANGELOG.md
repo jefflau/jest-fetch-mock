@@ -16,6 +16,7 @@ First release since 3.0.3 (March 2020). Everything merged to master in the inter
 ### Fixed
 
 - TypeScript definitions no longer import `NodeJS.Global`, which was removed from `@types/node` — types now work with modern `@types/node`/TypeScript setups ([#184], [#201], [#248])
+- `dontMockIf`/`dontMockOnceIf` predicates now receive the fully-constructed `Request` (method, headers from the init argument), matching `doMockIf` behavior
 - `fetch()` called with an already-aborted signal now rejects (as per the fetch spec) instead of throwing synchronously, so it can be caught with `.catch()` ([#237])
 - `fetch.isMocking` returns a plain boolean again after `resetMocks()` ([#183])
 - `DOMException` is polyfilled in Node environments, fixing `mockAbort` under `jest-environment-node` ([#159])
@@ -27,6 +28,13 @@ First release since 3.0.3 (March 2020). Everything merged to master in the inter
 - `cross-fetch` floor raised to ^3.1.8 (security fixes in transitive `node-fetch`) ([#228], [#249])
 - The npm tarball no longer ships tooling configs, workflow files, or type-test files
 - npm publishing now happens via GitHub Actions [trusted publishing](https://docs.npmjs.com/trusted-publishers) with provenance
+- The `promise-polyfill` dependency was removed — unreachable code on Node ≥ 12, which the `engines` field declares
+
+### Internal
+
+- Test suite grown from 64 to 98 tests with coverage thresholds enforced on every run (99% statements / 98% branches)
+- New `integration/` suite: six consumer fixtures (jsdom, React + Testing Library, TypeScript strict, node native-fetch host, Jest 30, and a real-HTTP-server passthrough e2e) run against the packed tarball in CI and gate every release
+- Implementation compressed (~10% smaller) with no API changes
 
 [#145]: https://github.com/jefflau/jest-fetch-mock/issues/145
 [#159]: https://github.com/jefflau/jest-fetch-mock/issues/159
