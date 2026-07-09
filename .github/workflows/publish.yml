@@ -24,10 +24,11 @@ jobs:
         with:
           node-version: 24.x
           registry-url: 'https://registry.npmjs.org'
-      - name: Ensure npm supports trusted publishing
-        run: |
-          npm install -g npm@latest
-          npm --version
+      # trusted publishing needs npm >= 11.5.1; Node 24 bundles a sufficient
+      # npm, and self-upgrading npm in place has corrupted the install before
+      # (missing sigstore module) - so verify, never self-replace
+      - name: Check npm version
+        run: npm --version
       - run: yarn install --frozen-lockfile
       - run: yarn test
         env:
