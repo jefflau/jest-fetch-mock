@@ -3,7 +3,7 @@
 // whichever ambient environment the consumer has (lib "dom" or @types/node 18+).
 
 declare global {
-    // eslint-disable-next-line no-var -- `var` is the correct TS idiom for globalThis properties
+    // `var` is the correct TS idiom for globalThis properties
     var fetchMock: FetchMock;
 }
 

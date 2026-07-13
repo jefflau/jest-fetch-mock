@@ -2,11 +2,10 @@
   "extends": "./types/tsconfig.json",
   "compilerOptions": {
     "target": "ES2015",
-    "baseUrl": ".",
     "rootDir": "./types",
     "paths": {
       "jest-fetch-mock": [
-        "./"
+        "./types/index.d.ts"
       ]
     }
   },

@@ -9,11 +9,9 @@ updates:
         dependency-type: development
     open-pull-requests-limit: 5
     ignore:
-      # majors are migrated deliberately, not via bot PRs: cross-fetch is a
-      # runtime dep pinned to 3.x for the 3.x line (v4 drops it entirely),
-      # and toolchain majors (eslint flat config, jest, typescript) need
-      # accompanying config work
-      - dependency-name: "*"
+      # cross-fetch is the runtime fallback dep, deliberately held at 3.x;
+      # other majors arrive as PRs again now the toolchain is current (#273)
+      - dependency-name: cross-fetch
         update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions

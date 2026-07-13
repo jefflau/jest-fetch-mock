@@ -12,7 +12,7 @@ jest-fetch-mock is a fetch mock for Jest: ~1.4M npm downloads/week. It was dorma
 
 ## Commands
 
-- `yarn install && yarn test` — jest (with **enforced coverage thresholds**: 98% statements / 96% branches / 100% functions / 98% lines) + `tsc` (type tests) + `eslint`.
+- `yarn install && yarn test` — jest (with **enforced coverage thresholds**) + `tsc` (type tests) + `eslint`. Note eslint 10 needs Node ≥ 20.19, so the full chain wants a current Node; `yarn test:unit` (jest only) and `yarn tsc` run on anything ≥ 18, which is how the CI matrix splits it (lint has its own Node 24 job).
 - `bash integration/run.sh` — packs the tarball and runs six consumer fixtures against it (see `integration/README.md`). **This is the release gate.**
 - Local publishes are never done; see Releases.
 
@@ -52,4 +52,4 @@ npm account notes: the package is npm "high-impact" (mandatory 2FA); avoid accou
 - 3.2.0 shipped the 2020–2026 backlog to `latest` (the 3.1.0 version number was deliberately skipped — a stale 2024 git tag exists for it). Publishing it resolved ~10 open issues; the stale/obsolete sweep closed 9 more.
 - **4.0.0-beta.1 is on the `next` dist-tag**: the full modernization described under Architecture landed (native primitives, factory entry, setup one-liner, re-arm hook, TimeoutError reasons, `defaultResponseInit`, `realFetch`, exports map, self-contained types, Node ≥18/Jest ≥28 floors, `domexception` dropped). Every 3.x API is unchanged; the 3.x unit suite and all seven integration fixtures pass against 4.0 unmodified (except assertions on node-fetch-specific MIME spacing).
 - Toward **4.0.0 stable**: soak the beta on `next`, watch for issue reports, then maintainer sign-off → retag stable. Remaining nice-to-haves for 4.x minors: jsdom-fallback modernization (whatwg-fetch or undici instead of node-fetch 2), Jest 30 `globalsCleanup: 'on'` verification, label sweep of the remaining ~50 open issues against the new architecture (#218 and the native-fetch cluster can close when 4.0 goes stable).
-- **Queued work lives in labeled issues** — pick up anything labeled `maintenance`: currently [#273](https://github.com/jefflau/jest-fetch-mock/issues/273), the dev toolchain migration (eslint 10 flat config, Jest 30 as the repo's own runner, TS 6, typescript-eslint 8) with full step-by-step instructions and definition of done in the issue body. Dependabot is configured to in-range updates only until it's done.
+- **Queued work lives in issues labeled `maintenance`** (none open at the time of writing — the toolchain migration #273 is done: eslint 10 flat config, Jest 30, TS 6, typescript-eslint 8). Dependabot now proposes all majors except cross-fetch; TypeScript 7 (the native compiler) is the next deliberate toolchain step whenever it matters.
