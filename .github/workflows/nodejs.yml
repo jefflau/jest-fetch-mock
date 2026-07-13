@@ -23,9 +23,11 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: yarn
-    - run: yarn install --frozen-lockfile
-    # jest + tsc run on every supported Node; eslint 10 requires Node >= 20.19
-    # and runs in the dedicated lint job below
+    # --ignore-engines: eslint 10 declares Node >= 20.19 and yarn 1 enforces
+    # engines at install time, which would fail this job on older Nodes -
+    # but eslint never runs here (it has its own strict job below); this
+    # job exists to prove jest + tsc work on every supported runtime
+    - run: yarn install --frozen-lockfile --ignore-engines
     - run: yarn test:unit && yarn tsc
       env:
         CI: true
