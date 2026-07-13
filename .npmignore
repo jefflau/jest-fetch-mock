@@ -10,7 +10,7 @@ coverage
 .vscode
 .github
 .editorconfig
-.eslintrc.js
+eslint.config.js
 .prettierignore
 tsconfig.json
 types/test.ts

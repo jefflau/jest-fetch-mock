@@ -4,12 +4,15 @@
     "lib": [
       "es2015"
     ],
-    "baseUrl": ".",
     "paths": {
       "jest-fetch-mock": [
-        "."
+        "./index.d.ts"
       ]
     },
+    "types": [
+      "node",
+      "jest"
+    ],
     "noImplicitAny": true,
     "noImplicitThis": true,
     "strictNullChecks": true,
